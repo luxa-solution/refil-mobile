@@ -1,6 +1,6 @@
 import { useUnistyles } from 'react-native-unistyles';
 
-import '../translation';
+import '@/translation';
 
 import { Stack } from 'expo-router';
 

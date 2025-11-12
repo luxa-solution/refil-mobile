@@ -3,7 +3,7 @@ import { Stack } from 'expo-router';
 import { View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 
-import { ScreenContent } from '@/components/ScreenContent';
+import { ScreenContent } from '@/features/home/components/ScreenContent/ScreenContent';
 
 export default function Home() {
   return (

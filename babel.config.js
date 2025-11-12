@@ -5,8 +5,8 @@ module.exports = function (api) {
   plugins.push([
     'react-native-unistyles/plugin',
     {
-      autoProcessRoot: 'app',
-      autoProcessImports: ['~/components'],
+      autoProcessRoot: 'src/app',
+      autoProcessImports: ['~/src/shared/components'],
     },
   ]);
 
