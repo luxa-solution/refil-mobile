@@ -1,19 +1,14 @@
+import { Stack } from 'expo-router';
 import { useUnistyles } from 'react-native-unistyles';
 
 import '@/translation';
-
-import { Stack } from 'expo-router';
-
-export const unstable_settings = {
-  // Ensure that reloading on `/modal` keeps a back button present.
-  initialRouteName: '(tabs)',
-};
 
 export default function RootLayout() {
   const { theme } = useUnistyles();
 
   return (
     <Stack
+      initialRouteName='(tabs)'
       screenOptions={{
         headerStyle: {
           backgroundColor: theme.colors.background,
@@ -24,7 +19,6 @@ export default function RootLayout() {
         headerTintColor: theme.colors.typography,
       }}>
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-      <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
     </Stack>
   );
 }

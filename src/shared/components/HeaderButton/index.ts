@@ -1,1 +1,1 @@
-export * from './HeaderButton.tsx';
+export * from './HeaderButton';

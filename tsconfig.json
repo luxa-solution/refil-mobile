@@ -9,7 +9,6 @@
       "@/core/*": ["src/core/*"],
       "@/shared/*": ["src/shared/*"],
       "@/features/*": ["src/features/*"],
-      "@/store/*": ["src/store/*"],
       "@/translation/*": ["src/translation/*"],
       "@/app/*": ["src/app/*"]
     }
