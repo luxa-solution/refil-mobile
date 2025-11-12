@@ -7,6 +7,7 @@ This project follows a **feature-based architecture** pattern organized under th
 ```
 refil-mobile/
 ├── src/                          # All source code
+│   ├── api/                      # API & services (Axios + React Query)
 │   ├── app/                      # Expo Router - App routing & entry points
 │   ├── core/                     # Core utilities & configuration
 │   ├── features/                 # Feature modules (main business logic)
@@ -254,9 +255,22 @@ Then import from anywhere:
 import { ProfileScreen, ProfileCard } from '@/features/profile';
 ```
 
+## API & Services Layer
+
+The project uses **Axios** and **React Query (TanStack Query)** for API calls and data management. See **[API_SERVICES_STRUCTURE.md](./API_SERVICES_STRUCTURE.md)** for detailed implementation guidelines.
+
+Quick overview:
+
+- `src/api/client.ts` - Axios instance configuration
+- `src/api/endpoints/` - API endpoint definitions
+- `src/api/queries/` - React Query hooks for fetching
+- `src/api/mutations/` - React Query mutations for mutations
+- `src/core/queryClient.ts` - React Query client setup
+
 ## Next Steps
 
 - Add shared hooks under `src/shared/hooks/`
 - Create feature-specific utilities under `src/features/[feature]/utils/`
 - Set up Redux/Zustand slices in `src/store/slices/`
 - Add more translation files as needed
+- Implement API layer following [API_SERVICES_STRUCTURE.md](./API_SERVICES_STRUCTURE.md)
