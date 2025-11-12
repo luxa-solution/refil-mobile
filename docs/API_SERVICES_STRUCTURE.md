@@ -186,9 +186,8 @@ Define the API functions for a specific feature, importing the core `client`.
 **This file is internal to the feature's API module.**
 
 ```typescript
-import { client } from '@/core/api'; // Import the shared client
-import { ApiResponse } from '@/core/api/types';
-import { Order, CreateOrderDto } from '../types'; // Import feature-specific types
+import { client, ApiResponse } from '@/core/api'; // Import the shared client and type
+import { Order, CreateOrderDto } from '@/features/order/types'; // Import feature-specific types
 
 // Endpoint URLs
 export const orderEndpoints = {
@@ -237,8 +236,7 @@ Create reusable hooks for mutations with automatic cache invalidation.
 import { useMutation, UseMutationOptions } from '@tanstack/react-query';
 import { orderApi } from '../endpoints'; // Import internal endpoints
 import { Order, CreateOrderDto } from '../../types';
-import { ApiError, ApiResponse } from '@/core/api/types';
-import { queryClient } from '@/core/api/queryClient'; // Import the global client
+import { ApiError, ApiResponse, queryClient } from '@/core/api'; // Import global api client and types
 
 export const useCreateOrderMutation = (
   options?: UseMutationOptions<ApiResponse<Order>, ApiError, CreateOrderDto>
@@ -288,8 +286,7 @@ export * from './mutations';
 
 ```typescript
 import { QueryClientProvider } from '@tanstack/react-query';
-import { queryClient } from '@/core/api/queryClient';
-import { setupInterceptors } from '@/core/api';
+import { queryClient, setupInterceptors } from '@/core/api';
 import { useEffect } from 'react';
 
 export default function RootLayout() {
@@ -310,7 +307,7 @@ export default function RootLayout() {
 
 ```typescript
 // src/features/order/screens/OrderScreen.tsx
-import { useGetOrder, useCreateOrderMutation } from '../api'; // Import from feature's public api
+import { useGetOrder, useCreateOrderMutation } from '@/features/order/api'; // Import from feature's public api
 import { View, Text, Button } from 'react-native';
 
 export function OrderProfile({ orderId }: { orderId: string }) {

@@ -245,4 +245,4 @@ The API layer is split into two parts:
 2. **Feature API (`src/features/[name]/api`):**
    Each feature defines its own **endpoints**, **React Query hooks**, and **types (DTOs)**. These modules import the core `client` to make the actual requests.
 
-See **`API_STRUCTURE.md`** for a detailed implementation guide.
+See [**`API_STRUCTURE.md`**](./API_SERVICES_STRUCTURE.md) for a detailed implementation guide.

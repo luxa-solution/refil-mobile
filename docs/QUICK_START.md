@@ -36,10 +36,9 @@ mkdir -p src/features/my-feature/{screens,components,hooks,api/{mutations,querie
 // src/features/my-feature/components/MyComponent/MyComponent.tsx
 import { View, Text } from 'react-native';
 import { useStyles } from 'react-native-unistyles';
-import { stylesheet } from './MyComponent.style';
+import { styles } from './MyComponent.style';
 
 export const MyComponent = () => {
-  const { styles } = useStyles(stylesheet);
 
   return (
     <View style={styles.container}>
@@ -51,9 +50,9 @@ export const MyComponent = () => {
 
 ```typescript
 // src/features/my-feature/components/MyComponent/MyComponent.style.ts
-import { createStyles } from 'react-native-unistyles';
+import { StyleSheet } from 'react-native-unistyles';
 
-export const stylesheet = createStyles((theme) => ({
+export const styles = StyleSheet.create((theme) => ({
   container: {
     flex: 1,
     backgroundColor: theme.colors.background,
@@ -131,7 +130,7 @@ export * from './Container';
 
 ### Step 5: Import Anywhere
 
-Import from `features` or `app`. **Never** import from `core` or other `shared` modules (to avoid circular dependencies).
+Import to `features` or `app`. **Never** import to `core` or other `shared` modules (to avoid circular dependencies).
 
 ```typescript
 import { MySharedComponent } from '@/shared/components';
@@ -147,7 +146,7 @@ Our ESLint rules enforce a strict hierarchy: `core` -> `shared` -> `features` ->
 // A feature importing from `shared` and `core`
 import { Button, Container } from '@/shared/components';
 import { useNotificationStore } from '@/shared/store';
-import { theme } from '@/core/styles';
+import { queryClient } from '@/core/api';
 
 // An app route importing from a `feature`
 import { ScreenContent } from '@/features/home/components';
@@ -179,14 +178,14 @@ import { View } from 'react-native';
 import { useCustomHook } from '../hooks/useCustomHook';
 import { MyComponent } from '../components/MyComponent';
 import { useExampleHook } from '@/shared/hooks'; // OK: shared -> feature
-import { theme } from '@/core/styles'; // OK: core -> feature
+import { queryClient } from '@/core/api'; // OK: core -> feature
 
 export const MyScreen = () => {
   const data = useCustomHook();
   const sharedData = useExampleHook();
 
   return (
-    <View style={{ backgroundColor: theme.colors.background }}>
+    <View>
       <MyComponent data={data} />
     </View>
   );
@@ -286,7 +285,7 @@ src/features/user-profile/
 
 ## 📚 Next Steps
 
-1. Review the `PROJECT_STRUCTURE.md` for full details.
+1. Review the [`PROJECT_STRUCTURE.md`](./PROJECT_STRUCTURE.md) for full details.
 2. Study existing features for patterns.
 3. Create your first feature following the template above.
 4. Share feedback and suggestions for improvements!
