@@ -1,69 +1,51 @@
-# API & Services Architecture
+# API & Services Architecture (Modular)
 
-This document outlines the recommended structure for organizing API calls, services, and data fetching using **Axios** and **React Query (TanStack Query)** with best practices for reusability, type safety, and maintainability.
+This document outlines the structure for API calls and data fetching using a **centralized Axios client** and **feature-based React Query hooks**, enforced by our modular architecture.
 
 ## Rationale
 
-- **Separation of Concerns**: API logic is separated from UI components
-- **Reusability**: Hooks and endpoints can be used across multiple components
-- **Type Safety**: Full TypeScript support with proper typing
-- **Caching**: React Query handles automatic caching and synchronization
-- **Interceptors**: Centralized auth and error handling
-- **Scalability**: Easy to add new endpoints without duplicating code
+- **Modular**: API logic (endpoints, hooks, types) lives *inside* the feature that consumes it.
+- **Separation of Concerns**: The core client (`@/core/api`) is separate from the feature logic.
+- **Reusability**: The core client is reused by all features. Hooks are reused *within* a feature.
+- **Type Safety**: Feature-specific DTOs (`.dto.ts`) live with the feature's API.
+- **Scalability**: Adding a new feature's API doesn't require modifying any shared code.
+- **Encapsulation**: Features export *only* their hooks, hiding the raw endpoint logic.
 
 ## Folder Structure
 
+The API is split into a **core client** and **feature-specific implementations**.
+
 ```
 src/
-├── api/
-│   ├── client.ts              # Axios instance configuration
-│   ├── interceptors.ts        # Request/response interceptors
-│   ├── types.ts               # API response/error types
-│   ├── config.ts              # API configuration (base URLs, env)
-│   ├── endpoints/             # API endpoint definitions
-│   │   ├── auth.ts
-│   │   ├── users.ts
-│   │   ├── products.ts
-│   │   └── index.ts           # Export all endpoints
-│   ├── queries/               # React Query hooks (GET requests)
-│   │   ├── auth/
-│   │   │   ├── useLogin.ts
-│   │   │   ├── useLogout.ts
-│   │   │   └── index.ts
-│   │   ├── users/
-│   │   │   ├── useGetUser.ts
-│   │   │   ├── useGetUsers.ts
-│   │   │   └── index.ts
-│   │   ├── products/
-│   │   │   ├── useGetProducts.ts
-│   │   │   ├── useGetProduct.ts
-│   │   │   └── index.ts
-│   │   └── index.ts           # Export all query hooks
-│   └── mutations/             # React Query mutations (POST/PUT/DELETE)
-│       ├── auth/
-│       │   ├── useLoginMutation.ts
-│       │   ├── useLogoutMutation.ts
-│       │   └── index.ts
-│       ├── users/
-│       │   ├── useUpdateUserMutation.ts
-│       │   ├── useCreateUserMutation.ts
-│       │   ├── useDeleteUserMutation.ts
-│       │   └── index.ts
-│       ├── products/
-│       │   ├── useCreateProductMutation.ts
-│       │   ├── useUpdateProductMutation.ts
-│       │   └── index.ts
-│       └── index.ts           # Export all mutation hooks
 ├── core/
-│   └── queryClient.ts         # React Query client configuration
-└── shared/
-    └── utils/
-        └── auth.ts            # Auth utilities (token storage, etc)
+│   └── api/
+│       ├── client.ts         # Axios instance configuration
+│       ├── interceptors.ts   # Request/response interceptors
+│       ├── queryClient.ts    # React Query client configuration
+│       ├── types.ts          # GLOBAL API types (ApiResponse, ApiError)
+│       ├── config.ts         # API configuration (base URLs, env)
+│       └── index.ts          # Exports client, setupInterceptors
+│
+└── features/
+    └── order/
+        ├── api/
+        │   ├── endpoints.ts    # INTERNAL: `orderApi` functions
+        │   ├── mutations/
+        │   │   ├── useCreateOrderMutation.ts
+        │   │   └── index.ts    # INTERNAL: Barrel for mutation hooks
+        │   ├── queries/
+        │   │   ├── useGetOrder.ts
+        │   │   └── index.ts    # INTERNAL: Barrel for query hooks
+        │   └── index.ts        # PUBLIC: Re-exports hooks from ./queries & ./mutations
+        │
+        └── types/
+            ├── order.dtos.ts   # Feature-specific types (DTOs)
+            └── index.ts
 ```
 
 ## Implementation Guide
 
-### 1. Axios Instance & Client (`src/api/client.ts`)
+### 1. Axios Instance & Client (`src/core/api/client.ts`)
 
 Creates a reusable Axios instance with default configuration.
 
@@ -83,18 +65,18 @@ export const createAxiosInstance = (): AxiosInstance => {
   return instance;
 };
 
-export const axiosInstance = createAxiosInstance();
+// Import this client in your feature's `endpoints.ts`
+export const client = createAxiosInstance();
 ```
 
-**Why separate function?** Makes it easier to create multiple instances for different APIs if needed.
-
-### 2. Configuration (`src/api/config.ts`)
+### 2. Configuration (`src/core/api/config.ts`)
 
 Environment-based configuration for different deployment stages.
 
 ```typescript
 import Constants from 'expo-constants';
 
+// Make sure 'environment' is defined in your app.json 'extra' field
 const ENV = Constants.expoConfig?.extra?.environment || 'development';
 
 const API_URLS = {
@@ -107,9 +89,9 @@ export const API_BASE_URL = API_URLS[ENV as keyof typeof API_URLS];
 export const API_TIMEOUT = 10000;
 ```
 
-### 3. Types (`src/api/types.ts`)
+### 3. Global Types (`src/core/api/types.ts`)
 
-Centralized type definitions for API responses and errors.
+Centralized, generic type definitions for API responses and errors.
 
 ```typescript
 export interface ApiResponse<T> {
@@ -137,19 +119,21 @@ export interface PaginatedResponse<T> {
 }
 ```
 
-### 4. Interceptors (`src/api/interceptors.ts`)
+### 4. Interceptors (`src/core/api/interceptors.ts`)
 
 Handle authentication, token refresh, and global error handling.
 
 ```typescript
-import { axiosInstance } from './client';
-import { getStoredToken, removeStoredToken } from '@shared/utils/auth';
+import { client } from './client';
+// Auth token must come from a shared store, as `core` cannot import from `features`
+import { useAuthStore } from '@/shared/store'; 
 
-export const setupInterceptors = async () => {
+export const setupInterceptors = () => {
   // Request interceptor - Add auth token
-  axiosInstance.interceptors.request.use(
+  client.interceptors.request.use(
     async (config) => {
-      const token = await getStoredToken();
+      // Get token from shared auth store
+      const token = useAuthStore.getState().token; 
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
       }
@@ -159,71 +143,22 @@ export const setupInterceptors = async () => {
   );
 
   // Response interceptor - Handle errors
-  axiosInstance.interceptors.response.use(
+  client.interceptors.response.use(
     (response) => response,
     async (error) => {
       // Handle 401 Unauthorized
       if (error.response?.status === 401) {
-        await removeStoredToken();
-        // Navigate to login screen
-        // router.replace('/auth/login');
+        useAuthStore.getState().logout();
+        // Navigation logic should be handled in a root component
+        // that listens to the auth state
       }
-
-      // Handle other errors
-      if (error.response?.status >= 500) {
-        console.error('Server error:', error.response.status);
-      }
-
       return Promise.reject(error);
     }
   );
 };
 ```
 
-### 5. Endpoints (`src/api/endpoints/users.ts`)
-
-Define endpoint URLs and create reusable API functions.
-
-```typescript
-import { axiosInstance } from '../client';
-import { ApiResponse } from '../types';
-
-// Type definitions
-export interface User {
-  id: string;
-  name: string;
-  email: string;
-  avatar?: string;
-}
-
-// Endpoint URLs
-export const userEndpoints = {
-  getUser: (id: string) => `/users/${id}`,
-  updateUser: (id: string) => `/users/${id}`,
-  deleteUser: (id: string) => `/users/${id}`,
-  listUsers: () => '/users',
-};
-
-// API functions
-export const userApi = {
-  getUser: (id: string) => axiosInstance.get<ApiResponse<User>>(userEndpoints.getUser(id)),
-
-  updateUser: (id: string, data: Partial<User>) =>
-    axiosInstance.patch<ApiResponse<User>>(userEndpoints.updateUser(id), data),
-
-  deleteUser: (id: string) => axiosInstance.delete<ApiResponse<void>>(userEndpoints.deleteUser(id)),
-
-  listUsers: () => axiosInstance.get<ApiResponse<User[]>>(userEndpoints.listUsers()),
-};
-```
-
-**Benefits:**
-
-- URLs are centralized and easy to update
-- Functions return typed responses
-- Consistent error handling
-
-### 6. React Query Configuration (`src/core/queryClient.ts`)
+### 5. React Query Configuration (`src/core/api/queryClient.ts`)
 
 Initialize and configure the React Query client with sensible defaults.
 
@@ -245,100 +180,106 @@ export const queryClient = new QueryClient({
 });
 ```
 
-### 7. Query Hooks (`src/api/queries/users/useGetUser.ts`)
+### 6. Feature Endpoints (`src/features/order/api/endpoints.ts`)
+
+Define the API functions for a specific feature, importing the core `client`.
+**This file is internal to the feature's API module.**
+
+```typescript
+import { client } from '@/core/api'; // Import the shared client
+import { ApiResponse } from '@/core/api/types';
+import { Order, CreateOrderDto } from '../types'; // Import feature-specific types
+
+// Endpoint URLs
+export const orderEndpoints = {
+  getOne: (id: string) => `/orders/${id}`,
+  create: () => '/orders',
+};
+
+// API functions
+export const orderApi = {
+  getOrder: (id: string) =>
+    client.get<ApiResponse<Order>>(orderEndpoints.getOne(id)),
+
+  createOrder: (data: CreateOrderDto) =>
+    client.post<ApiResponse<Order>>(orderEndpoints.create(), data),
+};
+```
+
+### 7. Query Hooks (`src/features/order/api/queries/useGetOrder.ts`)
 
 Create reusable hooks for data fetching with React Query.
 
 ```typescript
 import { useQuery, UseQueryOptions } from '@tanstack/react-query';
-import { userApi, User } from '../../endpoints/users';
-import { ApiError, ApiResponse } from '../../types';
+import { orderApi } from '../endpoints'; // Import internal endpoints
+import { Order } from '../../types';
+import { ApiError, ApiResponse } from '@/core/api/types';
 
-export const useGetUser = (id: string, options?: UseQueryOptions<ApiResponse<User>, ApiError>) => {
+export const useGetOrder = (
+  id: string,
+  options?: UseQueryOptions<ApiResponse<Order>, ApiError>
+) => {
   return useQuery({
-    queryKey: ['users', id],
-    queryFn: () => userApi.getUser(id).then((res) => res.data),
+    queryKey: ['orders', id], // Feature-specific query key
+    queryFn: () => orderApi.getOrder(id).then((res) => res.data),
     enabled: !!id, // Only run if id exists
     ...options,
   });
 };
 ```
 
-**Usage in components:**
-
-```typescript
-const { data, isLoading, error } = useGetUser('user-123');
-
-if (isLoading) return <Text>Loading...</Text>;
-if (error) return <Text>Error: {error.message}</Text>;
-return <Text>{data?.data.name}</Text>;
-```
-
-### 8. Mutation Hooks (`src/api/mutations/users/useUpdateUserMutation.ts`)
+### 8. Mutation Hooks (`src/features/order/api/mutations/useCreateOrderMutation.ts`)
 
 Create reusable hooks for mutations with automatic cache invalidation.
 
 ```typescript
 import { useMutation, UseMutationOptions } from '@tanstack/react-query';
-import { userApi, User } from '../../endpoints/users';
-import { ApiError, ApiResponse } from '../../types';
-import { queryClient } from '../../../core/queryClient';
+import { orderApi } from '../endpoints'; // Import internal endpoints
+import { Order, CreateOrderDto } from '../../types';
+import { ApiError, ApiResponse } from '@/core/api/types';
+import { queryClient } from '@/core/api/queryClient'; // Import the global client
 
-export const useUpdateUserMutation = (
-  options?: UseMutationOptions<ApiResponse<User>, ApiError, { id: string; data: Partial<User> }>
+export const useCreateOrderMutation = (
+  options?: UseMutationOptions<ApiResponse<Order>, ApiError, CreateOrderDto>
 ) => {
   return useMutation({
-    mutationFn: ({ id, data }) => userApi.updateUser(id, data).then((res) => res.data),
+    mutationFn: (data) => orderApi.createOrder(data).then((res) => res.data),
     onSuccess: (data) => {
-      // Invalidate and refetch the user data
-      queryClient.invalidateQueries({ queryKey: ['users', data.data.id] });
-      // Or update the cache directly
-      queryClient.setQueryData(['users', data.data.id], data);
+      // Invalidate and refetch the user's orders list
+      queryClient.invalidateQueries({ queryKey: ['orders'] });
+      
+      // Or update the cache directly for this new item
+      queryClient.setQueryData(['orders', data.data.id], data);
     },
     ...options,
   });
 };
 ```
 
-**Usage in components:**
+## Export Files (Public API of the Module)
+
+### `src/features/order/api/queries/index.ts` (Internal Barrel)
 
 ```typescript
-const mutation = useUpdateUserMutation();
-
-const handleUpdate = () => {
-  mutation.mutate({
-    id: 'user-123',
-    data: { name: 'New Name' },
-  });
-};
-
-if (mutation.isPending) return <Text>Updating...</Text>;
+export * from './useGetOrder';
+export * from './useGetOrders';
 ```
 
-## Export Files
-
-### `src/api/endpoints/index.ts`
+### `src/features/order/api/mutations/index.ts` (Internal Barrel)
 
 ```typescript
-export * from './auth';
-export * from './users';
-export * from './products';
+export * from './useCreateOrderMutation';
+export * from './useUpdateOrderMutation';
 ```
 
-### `src/api/queries/index.ts`
+### `src/features/order/api/index.ts` (Public Barrel)
+
+This is the **only file** components should import from. It **only** exports the hooks.
 
 ```typescript
-export * from './auth';
-export * from './users';
-export * from './products';
-```
-
-### `src/api/mutations/index.ts`
-
-```typescript
-export * from './auth';
-export * from './users';
-export * from './products';
+export * from './queries';
+export * from './mutations';
 ```
 
 ## Usage in App
@@ -347,32 +288,38 @@ export * from './products';
 
 ```typescript
 import { QueryClientProvider } from '@tanstack/react-query';
-import { queryClient } from '@/core/queryClient';
-import { setupInterceptors } from '@/api/interceptors';
+import { queryClient } from '@/core/api/queryClient';
+import { setupInterceptors } from '@/core/api';
 import { useEffect } from 'react';
 
 export default function RootLayout() {
   useEffect(() => {
+    // Setup Axios interceptors on app start
     setupInterceptors();
   }, []);
 
   return (
     <QueryClientProvider client={queryClient}>
-      {/* Your routes */}
+      {/* Your routes (e.g., <Slot /> or <Stack />) */}
     </QueryClientProvider>
   );
 }
 ```
 
-### Use in Components
+### Use in Components (within the same feature)
 
 ```typescript
-import { useGetUser } from '@/api/queries';
-import { useUpdateUserMutation } from '@/api/mutations';
+// src/features/order/screens/OrderScreen.tsx
+import { useGetOrder, useCreateOrderMutation } from '../api'; // Import from feature's public api
+import { View, Text, Button } from 'react-native';
 
-export function UserProfile({ userId }: { userId: string }) {
-  const { data, isLoading } = useGetUser(userId);
-  const { mutate: updateUser } = useUpdateUserMutation();
+export function OrderProfile({ orderId }: { orderId: string }) {
+  const { data, isLoading } = useGetOrder(orderId);
+  const { mutate: createOrder, isPending } = useCreateOrderMutation();
+
+  const handleCreate = () => {
+    createOrder({ /* ... CreateOrderDto ... */ });
+  };
 
   return (
     <View>
@@ -380,15 +327,11 @@ export function UserProfile({ userId }: { userId: string }) {
         <Text>Loading...</Text>
       ) : (
         <>
-          <Text>{data?.data.name}</Text>
+          <Text>{data?.data.id}</Text>
           <Button
-            onPress={() =>
-              updateUser({
-                id: userId,
-                data: { name: 'Updated Name' },
-              })
-            }
-            title="Update"
+            onPress={handleCreate}
+            title="Create New Order"
+            disabled={isPending}
           />
         </>
       )}
@@ -401,60 +344,68 @@ export function UserProfile({ userId }: { userId: string }) {
 
 ✅ **Separation of Concerns**
 
-- API logic in `api/endpoints`
-- React Query logic in `api/queries` and `api/mutations`
-- UI components in features
+- **`core/api`**: Handles *how* requests are made (client, auth, query client).
+- **`features/[name]/api`**: Handles *what* requests are made (endpoints, hooks).
 
-✅ **Reusability**
+✅ **Encapsulation**
 
-- One hook per API operation
-- Hooks can be composed and used in multiple components
-- Avoid duplicating API calls
+- A feature's public API is its hooks (`@/features/order/api`).
+- Raw endpoint functions (`orderApi`) are internal details.
 
 ✅ **Type Safety**
 
-- Full TypeScript support for all API operations
-- Shared type definitions in `api/types.ts`
-- Response types enforced at query level
+- Global types in `core/api/types.ts`.
+- Feature-specific DTOs in `features/[name]/types/`.
 
 ✅ **Error Handling**
 
-- Centralized in interceptors for request/response
-- Individual error handling in hooks if needed
-- Proper error messages for UI feedback
+- Global errors (401, 500) handled in `core/api/interceptors.ts`.
+- Specific errors (404, 400) handled in components via `useQuery`'s `error` state.
 
 ✅ **Caching Strategy**
 
-- Use staleTime to control when data becomes stale
-- Use gcTime to control when data is garbage collected
-- Invalidate queries when mutations succeed
-- Use setQueryData for optimistic updates
+- `queryClient` in `core/api` sets global defaults.
+- `onSuccess` in feature mutations invalidates relevant query keys.
 
 ✅ **Query Keys**
 
-- Use nested arrays: `['users', userId]`
-- Enables granular cache invalidation
-- Easy to debug with React Query DevTools
+- Use nested arrays: `['orders']`, `['orders', orderId]`
+- Enables granular cache invalidation.
 
 ✅ **Environment Management**
 
-- Use expo-constants for environment-based configs
-- Different API URLs per environment
-- Easy to switch between dev/staging/prod
+- Use `expo-constants` for environment-based configs.
+- Different API URLs per environment.
 
 ## Common Patterns
 
 ### Optimistic Updates
 
 ```typescript
-onMutate: (newData) => {
-  const previousData = queryClient.getQueryData(['users', newData.id]);
-  queryClient.setQueryData(['users', newData.id], newData);
-  return previousData;
+// In a useMutation hook
+onMutate: async (newData) => {
+  // Cancel any outgoing refetches
+  await queryClient.cancelQueries({ queryKey: ['orders', newData.id] });
+
+  // Snapshot the previous value
+  const previousData = queryClient.getQueryData(['orders', newData.id]);
+
+  // Optimistically update to the new value
+  queryClient.setQueryData(['orders', newData.id], newData);
+
+  // Return a context object with the snapshotted value
+  return { previousData };
 },
-onError: (error, newData, rollback) => {
-  if (rollback) queryClient.setQueryData(['users', newData.id], rollback);
-}
+onError: (err, newData, context) => {
+  // Roll back to the previous value on error
+  if (context?.previousData) {
+    queryClient.setQueryData(['orders', newData.id], context.previousData);
+  }
+},
+onSettled: (newData) => {
+  // Always refetch after error or success
+  queryClient.invalidateQueries({ queryKey: ['orders', newData.id] });
+},
 ```
 
 ### Dependent Queries
@@ -462,7 +413,8 @@ onError: (error, newData, rollback) => {
 ```typescript
 const { data: user } = useGetUser(userId);
 const { data: posts } = useGetUserPosts(user?.data.id, {
-  enabled: !!user?.data.id, // Only run when user is loaded
+  // `enabled` ensures this query does not run until `user.data.id` is available
+  enabled: !!user?.data.id,
 });
 ```
 
@@ -471,30 +423,34 @@ const { data: posts } = useGetUserPosts(user?.data.id, {
 ```typescript
 const [page, setPage] = useState(1);
 const { data } = useQuery({
-  queryKey: ['users', page],
-  queryFn: () => userApi.listUsers({ page, limit: 20 }),
+  queryKey: ['orders', page],
+  queryFn: () => orderApi.listOrders({ page, limit: 20 }),
+  keepPreviousData: true, // Prevents UI flicker when changing pages
 });
 ```
 
-### Infinite Queries (for lists)
+### Infinite Queries (for "Load More" lists)
 
 ```typescript
-const { data, fetchNextPage } = useInfiniteQuery({
-  queryKey: ['users'],
-  queryFn: ({ pageParam }) => userApi.listUsers({ page: pageParam, limit: 20 }),
+const { data, fetchNextPage, hasNextPage } = useInfiniteQuery({
+  queryKey: ['orders'],
+  queryFn: ({ pageParam = 1 }) => orderApi.listOrders({ page: pageParam, limit: 20 }),
   initialPageParam: 1,
-  getNextPageParam: (lastPage) => lastPage.nextPage,
+  getNextPageParam: (lastPage, allPages) => {
+    const nextPage = lastPage.items.length ? allPages.length + 1 : undefined;
+    return nextPage;
+  },
 });
 ```
 
 ## Tools
 
-- **React Query DevTools**: Inspect queries, mutations, and cache
-- **Axios DevTools/Interceptor**: Log all requests/responses
-- **TypeScript**: Full type checking at compile time
+- **React Query DevTools**: Inspect queries, mutations, and cache.
+- **Axios Interceptors**: Log all requests/responses for debugging.
+- **TypeScript**: Full type checking at compile time.
 
 ## References
 
-- [React Query Documentation](https://tanstack.com/query/latest)
+- [TanStack Query (React Query) Docs](https://tanstack.com/query/latest)
 - [Axios Documentation](https://axios-http.com/docs/intro)
-- [TypeScript Handbook](https://www.typescriptlang.org/docs/)
+- [Modular Architecture Patterns](https://khalilstemmler.com/articles/enterprise-typescript-nodejs/application-layer-imports-domain-layer/)
