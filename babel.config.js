@@ -6,7 +6,7 @@ module.exports = function (api) {
     'react-native-unistyles/plugin',
     {
       autoProcessRoot: 'src/app',
-      autoProcessImports: ['~/src/shared/components'],
+      autoProcessImports: ['@/src/shared/components'],
     },
   ]);
 

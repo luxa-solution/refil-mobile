@@ -2,26 +2,28 @@
 
 ## 📚 Important Files & Their Location
 
-| Purpose | Location | Import Path |
-|---------|----------|-------------|
-| Shared UI Components | `src/shared/components/` | `@/shared/components/ComponentName` |
-| Feature Components | `src/features/[feature]/components/` | `@/features/[feature]` |
-| Feature Screens | `src/features/[feature]/screens/` | `@/features/[feature]` |
-| Custom Hooks | `src/shared/hooks/` or `src/features/[feature]/hooks/` | `@/shared/hooks/` or `@/features/[feature]` |
-| Core Utilities | `src/core/` | `@/core/` |
-| i18n Setup | `src/translation/` | `@/translation/` |
-| State Management | `src/store/` | `@/store/` |
-| App Routing | `src/app/` | `@/app/` |
-| Styling Config | `src/theme.ts`, `src/unistyles.ts` | Import directly |
+| Purpose              | Location                                               | Import Path                                 |
+| -------------------- | ------------------------------------------------------ | ------------------------------------------- |
+| Shared UI Components | `src/shared/components/`                               | `@/shared/components/ComponentName`         |
+| Feature Components   | `src/features/[feature]/components/`                   | `@/features/[feature]`                      |
+| Feature Screens      | `src/features/[feature]/screens/`                      | `@/features/[feature]`                      |
+| Custom Hooks         | `src/shared/hooks/` or `src/features/[feature]/hooks/` | `@/shared/hooks/` or `@/features/[feature]` |
+| Core Utilities       | `src/core/`                                            | `@/core/`                                   |
+| i18n Setup           | `src/translation/`                                     | `@/translation/`                            |
+| State Management     | `src/store/`                                           | `@/store/`                                  |
+| App Routing          | `src/app/`                                             | `@/app/`                                    |
+| Styling Config       | `src/theme.ts`, `src/unistyles.ts`                     | Import directly                             |
 
 ## 🎯 Creating a New Feature
 
 ### Step 1: Create Feature Directory
+
 ```bash
 mkdir -p src/features/my-feature/{screens,components,hooks,utils}
 ```
 
 ### Step 2: Create Main Component
+
 ```typescript
 // src/features/my-feature/components/MyComponent.tsx
 import { View, Text } from 'react-native';
@@ -44,6 +46,7 @@ const styles = StyleSheet.create((theme) => ({
 ```
 
 ### Step 3: Create Feature Index (Barrel Export)
+
 ```typescript
 // src/features/my-feature/index.ts
 export { MyComponent } from './components/MyComponent';
@@ -51,6 +54,7 @@ export { MyScreen } from './screens/MyScreen';
 ```
 
 ### Step 4: Use in Your App
+
 ```typescript
 // src/app/my-route.tsx
 import { MyComponent } from '@/features/my-feature';
@@ -63,11 +67,13 @@ export default function MyRoute() {
 ## 🔄 Creating a Shared Component
 
 ### Step 1: Create Component Directory
+
 ```bash
 mkdir -p src/shared/components/MySharedComponent
 ```
 
 ### Step 2: Add Files
+
 ```
 src/shared/components/MySharedComponent/
 ├── MySharedComponent.tsx
@@ -76,18 +82,21 @@ src/shared/components/MySharedComponent/
 ```
 
 ### Step 3: Component Export
+
 ```typescript
 // src/shared/components/MySharedComponent/index.ts
 export * from './MySharedComponent';
 ```
 
 ### Step 4: Update Shared Index
+
 ```typescript
 // src/shared/index.ts
 export { MySharedComponent } from './components/MySharedComponent';
 ```
 
 ### Step 5: Import Anywhere
+
 ```typescript
 import { MySharedComponent } from '@/shared';
 ```
@@ -95,6 +104,7 @@ import { MySharedComponent } from '@/shared';
 ## 💡 Import Examples
 
 ### ✅ Good Practices
+
 ```typescript
 // Use barrel exports from index files
 import { ScreenContent } from '@/features/home';
@@ -106,12 +116,13 @@ import { useCustomHook } from '@/shared/hooks';
 ```
 
 ### ❌ Avoid
+
 ```typescript
 // Don't use relative paths
 import { Button } from '../../../shared/components/Button';
 
 // Don't import from non-existent barrel exports
-import { SomeComponent } from '@/features/my-feature';  // if index.ts doesn't export it
+import { SomeComponent } from '@/features/my-feature'; // if index.ts doesn't export it
 ```
 
 ## 🏗️ Feature Structure Template
@@ -125,7 +136,7 @@ import { sharedUtility } from '@/shared/utils';
 
 export const MyScreen = () => {
   const data = useCustomHook();
-  
+
   return (
     <View>
       <MyComponent data={data} />
@@ -142,21 +153,23 @@ import { useState, useEffect } from 'react';
 
 export const useMyHook = () => {
   const [data, setData] = useState(null);
-  
+
   useEffect(() => {
     // Hook logic
   }, []);
-  
+
   return data;
 };
 ```
 
 Then export from `src/shared/hooks/index.ts`:
+
 ```typescript
 export { useMyHook } from './useMyHook';
 ```
 
 And import anywhere:
+
 ```typescript
 import { useMyHook } from '@/shared/hooks';
 ```
@@ -203,16 +216,19 @@ src/features/user-profile/
 ## 🆘 Troubleshooting
 
 **Import paths not resolving?**
+
 - Make sure `tsconfig.json` has the path alias configured
 - Restart your development server
 - Verify the file actually exists at the path
 
 **Can't find barrel export?**
+
 - Check that `index.ts` file exists in the module
 - Verify the export statement is correct
 - Make sure you're exporting the right items
 
 **Module resolution errors?**
+
 - Clear cache: `npm cache clean --force` or `pnpm store prune`
 - Restart Metro: Kill the development server and restart
 

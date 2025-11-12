@@ -26,6 +26,7 @@ refil-mobile/
 ## Detailed Structure
 
 ### `src/app/` - Routing Layer
+
 Expo Router configuration. Handles all navigation and screen registration.
 
 ```
@@ -43,6 +44,7 @@ src/app/
 **Import path:** `@/app/*`
 
 ### `src/core/` - Core Utilities
+
 Shared utilities and configuration that don't belong to any specific feature.
 
 ```
@@ -57,6 +59,7 @@ src/core/
 **Import path:** `@/core/*`
 
 ### `src/features/` - Feature Modules
+
 Each feature is self-contained with its own components, hooks, screens, and utils.
 
 ```
@@ -79,12 +82,14 @@ src/features/
 ```
 
 **Import paths:**
+
 ```typescript
 import { ScreenContent } from '@/features/home';
 import { InternalizationExample } from '@/features/modal';
 ```
 
 ### `src/shared/` - Reusable Components & Utilities
+
 Components and utilities that are used across multiple features.
 
 ```
@@ -108,6 +113,7 @@ src/shared/
 ```
 
 **Import paths:**
+
 ```typescript
 // Direct import
 import { Button } from '@/shared/components/Button/Button';
@@ -117,6 +123,7 @@ import { Button } from '@/shared';
 ```
 
 ### `src/store/` - State Management
+
 Redux slices, store configuration, or Zustand stores.
 
 ```
@@ -128,6 +135,7 @@ src/store/
 **Import path:** `@/store/*`
 
 ### `src/translation/` - Internationalization
+
 Translation files and i18n initialization.
 
 ```
@@ -233,6 +241,7 @@ src/shared/components/MyComponent/
 4. Import components using path aliases
 
 Example:
+
 ```typescript
 // src/features/profile/index.ts
 export { ProfileScreen } from './screens/ProfileScreen';
@@ -240,6 +249,7 @@ export { ProfileCard } from './components/ProfileCard/ProfileCard';
 ```
 
 Then import from anywhere:
+
 ```typescript
 import { ProfileScreen, ProfileCard } from '@/features/profile';
 ```
