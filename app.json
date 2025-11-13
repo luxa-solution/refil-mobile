@@ -5,15 +5,8 @@
     "version": "0.0.1",
     "newArchEnabled": true,
     "scheme": "refil-mobile",
-    "platforms": [
-      "ios",
-      "android"
-    ],
-    "plugins": [
-      "expo-router",
-      "expo-localization",
-      "expo-font"
-    ],
+    "platforms": ["ios", "android"],
+    "plugins": ["expo-router", "expo-localization", "expo-font"],
     "experiments": {
       "typedRoutes": true,
       "tsconfigPaths": true
@@ -26,9 +19,7 @@
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
-    "assetBundlePatterns": [
-      "**/*"
-    ],
+    "assetBundlePatterns": ["**/*"],
     "ios": {
       "supportsTablet": true
     },
