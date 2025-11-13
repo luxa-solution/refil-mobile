@@ -1,5 +1,4 @@
-import { HeaderButton } from '@/shared/components/HeaderButton';
-import { TabBarIcon } from '@/shared/components/TabBarIcon';
+import { HeaderButton, TabBarIcon } from '@/shared/components';
 import { Link, Tabs } from 'expo-router';
 
 import { useUnistyles } from 'react-native-unistyles';

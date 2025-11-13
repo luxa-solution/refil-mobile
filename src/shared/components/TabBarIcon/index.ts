@@ -1,1 +1,1 @@
-export * from './TabBarIcon.tsx';
+export * from './TabBarIcon';

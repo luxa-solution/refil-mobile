@@ -1,172 +1,174 @@
-# Project Structure - Feature-Based Architecture
+# Project Structure - Modular Feature-Based Architecture
 
-This project follows a **feature-based architecture** pattern organized under the `src/` folder. This structure promotes scalability, maintainability, and clear separation of concerns.
+This project follows a **modular, feature-based architecture** pattern organized under the `src/` folder. This structure promotes scalability, maintainability, and a strict separation of concerns enforced by ESLint.
 
 ## Overview
 
 ```
 refil-mobile/
-├── src/                          # All source code
-│   ├── api/                      # API & services (Axios + React Query)
-│   ├── app/                      # Expo Router - App routing & entry points
-│   ├── core/                     # Core utilities & configuration
-│   ├── features/                 # Feature modules (main business logic)
-│   ├── shared/                   # Shared components & utilities
-│   ├── store/                    # State management (Redux/Zustand)
-│   ├── translation/              # i18n translations
-│   ├── breakpoints.ts            # Responsive design breakpoints
-│   ├── theme.ts                  # Theme configuration
-│   └── unistyles.ts              # Styling setup
-├── assets/                       # Images, icons, fonts
-├── app.json                      # Expo configuration
-├── tsconfig.json                 # TypeScript configuration with path aliases
-├── babel.config.js               # Babel configuration
-└── package.json
+├── src/
+│   ├── app/              # Routing Layer (Expo Router)
+│   ├── core/             # Core logic (API client, theme, i18n config)
+│   ├── features/         # All feature modules (business logic)
+│   ├── shared/           # Shared components, hooks, shared state
+│   └── translation/      # Language JSON files
+│
+├── assets/             # Images, icons, fonts
+├── app.json
+├── tsconfig.json       # TypeScript config with path aliases
+├── babel.config.js
+└── eslint.config.js    # Enforces module boundaries
 ```
+
+## Module Boundaries (Strictly Enforced)
+
+Imports flow in one direction. A module can **only** import from modules *below* it.
+
+1. `app` (Routes)
+   * Can import from `features`, `shared`, `core`.
+2. `features` (Business Logic)
+   * Can import from `shared`, `core`.
+   * **Cannot** import from `app` or other features.
+3. `shared` (Reusable UI/Logic)
+   * Can import from `core`.
+   * **Cannot** import from `app` or `features`.
+4. `core` (Base Layer)
+   * **Cannot** import from any other module.
 
 ## Detailed Structure
 
 ### `src/app/` - Routing Layer
 
-Expo Router configuration. Handles all navigation and screen registration.
+Contains all routes and layouts, managed by **Expo Router**. This layer connects your features to the UI.
 
 ```
 src/app/
-├── _layout.tsx              # Root layout
-├── modal.tsx                # Modal screen
-├── +html.tsx                # HTML setup
-├── +not-found.tsx           # 404 not found
+├── _layout.tsx           # Root layout
+├── +not-found.tsx        # 404 screen
 └── (tabs)/
-    ├── _layout.tsx          # Tab navigation layout
-    ├── index.tsx            # Home tab
-    └── two.tsx              # Second tab
+    ├── _layout.tsx       # Tab navigation layout
+    ├── index.tsx         # Imports a screen from '@/features/home/screens'
+    └── two.tsx           # Imports a screen from '@/features/home/screens'
 ```
 
-**Import path:** `@/app/*`
+**Import Alias:** `@/app`
 
-### `src/core/` - Core Utilities
+### `src/core/` - Core Layer
 
-Shared utilities and configuration that don't belong to any specific feature.
+The application's foundation. Has no dependencies on any other module.
 
 ```
 src/core/
-├── i18n/                    # Internationalization
-│   ├── init.ts              # i18n initialization
-│   ├── fallbackChecker.ts   # Language fallback logic
-│   └── languageDetector.ts  # Device language detection
-└── theme/                   # Theme utilities (if needed)
+├── api/
+│   ├── client.ts         # Axios instance
+│   ├── config.ts         # Environment config
+│   ├── interceptors.ts   # Request/Response interceptors
+│   ├── queryClient.ts    # React Query client configuration
+│   ├── types.ts          # Global API types (ApiError, etc)
+│   └── index.ts          # Exports client, setupInterceptors
+├── i18n/
+│   ├── init.ts           # i18next initialization
+│   ├── fallbackChecker.ts
+│   └── languageDetector.ts
+└── styles/
+    ├── breakpoints.ts    # Unistyles breakpoints
+    ├── theme.ts          # Theme definition
+    └── unistyles.ts      # Unistyles plugin registration
 ```
 
-**Import path:** `@/core/*`
+**Import Alias:** `@/core`
 
 ### `src/features/` - Feature Modules
 
-Each feature is self-contained with its own components, hooks, screens, and utils.
+Each feature is self-contained with its own components, hooks, screens, API logic, and state.
 
 ```
 src/features/
-├── home/                    # Home feature
-│   ├── screens/             # Feature screens
-│   ├── components/          # Feature-specific components
-│   │   ├── ScreenContent/
-│   │   └── EditScreenInfo/
-│   ├── hooks/               # Feature-specific hooks
-│   └── index.ts             # Feature exports
-├── modal/                   # Modal feature
+├── home/
 │   ├── components/
-│   │   └── InternalizationExample/
-│   └── index.ts
-├── tabs/                    # Tab navigation feature
-│   └── ...
-└── settings/                # Settings feature (placeholder)
-    └── ...
+│   │   ├── EditScreenInfo/
+│   │   └── index.ts
+│   ├── screens/
+│   │   ├── ScreenOne.tsx
+│   │   └── index.ts
+│   └── hooks/
+│       └── index.ts
+│
+├── auth/
+│   ├── api/              # Feature-specific API
+│   │   ├── endpoints.ts  # INTERNAL
+│   │   ├── mutations/    # Public hooks
+│   │   ├── queries/      # Public hooks
+│   │   └── index.ts      # PUBLIC BARREL (exports hooks)
+│   ├── components/       # Components used only in 'auth'
+│   ├── hooks/            # Hooks used only in 'auth'
+│   ├── screens/
+│   │   └── LoginScreen.tsx
+│   ├── store/            # State (Zustand) for this feature
+│   └── types/            # DTOs and types for this feature
+│
+└── order/
+    ├── api/
+    │   ├── endpoints.ts
+    │   ├── mutations/
+    │   └── queries/
+    ├── components/
+    ├── screens/
+    └── types/
+        └── order.dtos.ts
 ```
 
-**Import paths:**
-
-```typescript
-import { ScreenContent } from '@/features/home';
-import { InternalizationExample } from '@/features/modal';
-```
+**Import Aliasing:** `@/features/auth/api`, `@/features/home/components`, etc.
 
 ### `src/shared/` - Reusable Components & Utilities
 
-Components and utilities that are used across multiple features.
+Components, hooks, and state used across multiple features. **Cannot** depend on any feature.
 
 ```
 src/shared/
-├── components/              # Shared UI components
+├── components/           # Shared UI (Button, Container, etc.)
 │   ├── Button/
-│   │   ├── Button.tsx
-│   │   └── index.ts
 │   ├── Container/
-│   │   ├── Container.tsx
-│   │   └── index.ts
-│   ├── HeaderButton/
-│   │   ├── HeaderButton.tsx
-│   │   └── index.ts
-│   └── TabBarIcon/
-│       ├── TabBarIcon.tsx
-│       └── index.ts
-├── hooks/                   # Custom hooks
-├── utils/                   # Utility functions
-└── index.ts                 # Barrel export
+│   └── index.ts          # Barrel export for all shared components
+├── hooks/
+│   ├── useExampleHook.ts
+│   └── index.ts          # Barrel export for all shared hooks
+├── store/
+│   ├── notificationStore.ts
+│   └── index.ts          # Barrel export for all shared stores
+└── types/
+    └── index.ts
 ```
 
-**Import paths:**
-
-```typescript
-// Direct import
-import { Button } from '@/shared/components/Button/Button';
-
-// Via index (recommended)
-import { Button } from '@/shared';
-```
-
-### `src/store/` - State Management
-
-Redux slices, store configuration, or Zustand stores.
-
-```
-src/store/
-├── store.ts                 # Main store configuration
-└── slices/                  # Redux slices or Zustand stores
-```
-
-**Import path:** `@/store/*`
+**Import Alias:** `@/shared` (e.g., `@/shared/components`, `@/shared/hooks`)
 
 ### `src/translation/` - Internationalization
 
-Translation files and i18n initialization.
+Translation files and i18n resource loading.
 
 ```
 src/translation/
-├── en.json                  # English translations
-├── fr.json                  # French translations
-└── index.ts                 # i18n initialization & resource setup
+├── en.json
+├── fr.json
+└── index.ts              # Exports the resources
 ```
 
-**Import path:** `@/translation/*`
-
-### Root-level Config Files
-
-- `src/theme.ts` - Theme constants and configuration
-- `src/unistyles.ts` - Unistyles configuration
-- `src/breakpoints.ts` - Responsive design breakpoints
+**Import Alias:** `@/translation`
 
 ## Import Aliases
 
-The project uses TypeScript path aliases for clean imports. All aliases start with `@/` and map to the `src/` folder:
+The project uses TypeScript path aliases (`tsconfig.json`) for clean, absolute imports.
 
 ```json
 {
-  "@/*": ["src/*"],
-  "@/core/*": ["src/core/*"],
-  "@/shared/*": ["src/shared/*"],
-  "@/features/*": ["src/features/*"],
-  "@/store/*": ["src/store/*"],
-  "@/translation/*": ["src/translation/*"],
-  "@/app/*": ["src/app/*"]
+  "paths": {
+    "@/*": ["src/*"],
+    "@/core/*": ["src/core/*"],
+    "@/shared/*": ["src/shared/*"],
+    "@/features/*": ["src/features/*"],
+    "@/app/*": ["src/app/*"],
+    "@/translation": ["src/translation"]
+  }
 }
 ```
 
@@ -175,19 +177,15 @@ The project uses TypeScript path aliases for clean imports. All aliases start wi
 ```typescript
 // Instead of: import { Button } from '../../../shared/components/Button';
 // Use:
-import { Button } from '@/shared/components/Button/Button';
-
-// Or via barrel export:
-import { Button } from '@/shared';
+import { Button } from '@/shared/components';
 
 // Feature imports
-import { ScreenContent } from '@/features/home';
+import { ScreenContent } from '@/features/home/components';
+import { useGetOrder } from '@/features/order/api';
 
 // Core utilities
-import { init18n } from '@/core/i18n/init';
-
-// App routing
-import { useRouter } from '@/app/_layout';
+import { client } from '@/core/api';
+import { theme } from '@/core/styles';
 ```
 
 ## File Organization Best Practices
@@ -198,79 +196,53 @@ When creating a new feature, follow this structure:
 
 ```
 src/features/my-feature/
-├── screens/                 # Feature screens
-│   └── MyFeatureScreen.tsx
-├── components/              # Feature-specific components
+├── api/
+│   ├── mutations/
+│   ├── queries/
+│   ├── endpoints.ts      # Internal logic
+│   └── index.ts          # Public barrel for hooks
+├── components/
 │   ├── MyComponent/
-│   │   ├── MyComponent.tsx
-│   │   └── MyComponent.styles.ts
-│   └── AnotherComponent/
-│       └── ...
-├── hooks/                   # Feature-specific custom hooks
-│   └── useMyFeatureLogic.ts
-├── utils/                   # Feature-specific utilities
-│   └── helpers.ts
-└── index.ts                 # Barrel export
+│   └── index.ts          # Public barrel for components
+├── hooks/
+│   └── index.ts          # Public barrel for hooks
+├── screens/
+│   ├── MyFeatureScreen.tsx
+│   └── index.ts          # Public barrel for screens
+├── store/
+│   ├── myFeatureStore.ts
+│   └── index.ts          # Public barrel for stores
+└── types/
+    ├── myFeature.dto.ts
+    └── index.ts          # Public barrel for types
 ```
 
 ### Component File Organization
 
 ```
 src/shared/components/MyComponent/
-├── MyComponent.tsx          # Component implementation
-├── MyComponent.styles.ts    # Component styles (optional)
-├── MyComponent.test.tsx     # Tests (optional)
-├── MyComponent.types.ts     # TypeScript types (optional)
-└── index.ts                 # Export (export * from './MyComponent')
+├── MyComponent.tsx           # Component implementation
+├── MyComponent.style.ts      # Component styles (Unistyles)
+└── index.ts                  # Export (export * from './MyComponent')
 ```
 
 ## Benefits of This Structure
 
-✅ **Scalability** - Easy to add new features without affecting existing code
-✅ **Maintainability** - Related code is grouped together
-✅ **Reusability** - Shared components in a dedicated location
-✅ **Team Collaboration** - Different teams can work on different features
-✅ **Clear Dependencies** - Features depend on core and shared, not vice versa
-✅ **Testing** - Features can be tested independently
-✅ **Code Splitting** - Easy to implement lazy loading per feature
-
-## Adding a New Feature
-
-1. Create a new folder under `src/features/`
-2. Add `screens/`, `components/`, and `hooks/` directories
-3. Create an `index.ts` file with barrel exports
-4. Import components using path aliases
-
-Example:
-
-```typescript
-// src/features/profile/index.ts
-export { ProfileScreen } from './screens/ProfileScreen';
-export { ProfileCard } from './components/ProfileCard/ProfileCard';
-```
-
-Then import from anywhere:
-
-```typescript
-import { ProfileScreen, ProfileCard } from '@/features/profile';
-```
+✅ **Scalability** - Easy to add new features without affecting existing code.
+✅ **Maintainability** - Related code is co-located within its feature module.
+✅ **Reusability** - Clear separation between `shared` and `feature` code.
+✅ **Team Collaboration** - Different teams can own different feature modules.
+✅ **Clear Dependencies** - ESLint enforces `core` -> `shared` -> `features` -> `app`.
+✅ **Testing** - Features can be tested in isolation.
 
 ## API & Services Layer
 
-The project uses **Axios** and **React Query (TanStack Query)** for API calls and data management. See **[API_SERVICES_STRUCTURE.md](./API_SERVICES_STRUCTURE.md)** for detailed implementation guidelines.
+The API layer is split into two parts:
 
-Quick overview:
+1. **Core Client (`src/core/api`):**
+   Contains the single, shared **Axios instance**, base configuration, interceptors (for auth tokens, error handling, etc.), and the **React Query Client**.
 
-- `src/api/client.ts` - Axios instance configuration
-- `src/api/endpoints/` - API endpoint definitions
-- `src/api/queries/` - React Query hooks for fetching
-- `src/api/mutations/` - React Query mutations for mutations
-- `src/core/queryClient.ts` - React Query client setup
+2. **Feature API (`src/features/[name]/api`):**
+   Each feature defines its own **endpoints**, **React Query hooks**, and **types (DTOs)**. These modules import the core `client` to make the actual requests.
 
-## Next Steps
-
-- Add shared hooks under `src/shared/hooks/`
-- Create feature-specific utilities under `src/features/[feature]/utils/`
-- Set up Redux/Zustand slices in `src/store/slices/`
-- Add more translation files as needed
-- Implement API layer following [API_SERVICES_STRUCTURE.md](./API_SERVICES_STRUCTURE.md)
+See [**`API_STRUCTURE.md`**](./API_SERVICES_STRUCTURE.md) for a detailed implementation guide.
