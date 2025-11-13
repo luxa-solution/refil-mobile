@@ -22,6 +22,7 @@ jobs:
     name: Build Android APK
     runs-on: ubuntu-latest
     permissions:
+      contents: read
       pull-requests: write
       issues: write
     steps:
@@ -198,6 +199,7 @@ jobs:
     name: Build iOS IPA
     runs-on: macos-14
     permissions:
+      contents: read
       pull-requests: write
       issues: write
     steps:
