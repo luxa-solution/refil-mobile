@@ -44,7 +44,7 @@ jobs:
 
       - name: Build and analyze current bundle
         run: |
-          npx expo export --platform all
+          pnpm expo export --platform all
           CURRENT_SIZE=$(du -sh dist | cut -f1)
           echo "CURRENT_SIZE=$CURRENT_SIZE" >> $GITHUB_ENV
 
@@ -61,8 +61,8 @@ jobs:
       - name: Build and analyze base bundle
         if: github.event_name == 'pull_request'
         run: |
-          npm ci
-          npx expo export --platform all
+          pnpm install --frozen-lockfile
+          pnpm expo export --platform all
           BASE_SIZE=$(du -sh dist | cut -f1)
           echo "BASE_SIZE=$BASE_SIZE" >> $GITHUB_ENV
 
@@ -73,8 +73,8 @@ jobs:
           # Convert sizes to bytes for comparison
           current_bytes=$(du -sb dist | cut -f1)
           git checkout ${{ github.event.pull_request.head.sha }}
-          npm ci
-          npx expo export --platform all
+          pnpm install --frozen-lockfile
+          pnpm expo export --platform all
           pr_bytes=$(du -sb dist | cut -f1)
 
           diff=$((pr_bytes - current_bytes))

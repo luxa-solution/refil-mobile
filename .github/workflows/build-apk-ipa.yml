@@ -21,6 +21,9 @@ jobs:
   build-android:
     name: Build Android APK
     runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      issues: write
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -194,6 +197,9 @@ jobs:
   build-ios:
     name: Build iOS IPA
     runs-on: macos-14
+    permissions:
+      pull-requests: write
+      issues: write
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
