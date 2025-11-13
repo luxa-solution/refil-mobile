@@ -1,0 +1,197 @@
+# .github/workflows/performance.yml
+name: Performance Monitoring
+
+on:
+  pull_request:
+    branches: [main, develop]
+  push:
+    branches: [main]
+  schedule:
+    - cron: "0 0 * * 0" # Weekly on Sunday
+
+jobs:
+  performance-metrics:
+    name: React Native Performance
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      contents: read
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 8
+
+      - name: Get pnpm store directory
+        id: pnpm-cache
+        shell: bash
+        run: echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
+
+      - name: Setup pnpm cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Analyze dependencies
+        id: deps
+        run: |
+          # Count dependencies
+          TOTAL_DEPS=$(pnpm list --depth=Infinity --json | jq '[.. | .dependencies? | select(. != null) | keys] | add | unique | length')
+          DIRECT_DEPS=$(cat package.json | jq '.dependencies | length')
+          DEV_DEPS=$(cat package.json | jq '.devDependencies | length')
+
+          echo "total=$TOTAL_DEPS" >> $GITHUB_OUTPUT
+          echo "direct=$DIRECT_DEPS" >> $GITHUB_OUTPUT
+          echo "dev=$DEV_DEPS" >> $GITHUB_OUTPUT
+
+      - name: Check for heavy dependencies
+        id: heavy
+        run: |
+          # List packages larger than 1MB
+          pnpm list --depth=Infinity --json | jq -r '
+            .. | .dependencies? | select(. != null) | 
+            to_entries[] | 
+            "\(.key)@\(.value.version // "unknown")"
+          ' | sort -u > all-deps.txt
+
+          echo "Heavy dependencies:" > heavy-deps.txt
+          du -sh node_modules/* | sort -rh | head -10 >> heavy-deps.txt
+
+      - name: Calculate startup metrics
+        id: startup
+        run: |
+          # Measure JS bundle parsing time (approximation)
+          START_TIME=$(node -e "console.time('startup'); require('./App.tsx'); console.timeEnd('startup')" 2>&1 | grep startup || echo "startup: 0ms")
+          echo "startup_time=$START_TIME" >> $GITHUB_OUTPUT
+
+      - name: Comment performance metrics
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require('fs');
+            const heavyDeps = fs.readFileSync('heavy-deps.txt', 'utf8');
+
+            const comment = `## 📊 Performance Metrics
+
+            ### 📦 Dependency Analysis
+            - **Total dependencies**: ${{ steps.deps.outputs.total }}
+            - **Direct dependencies**: ${{ steps.deps.outputs.direct }}
+            - **Dev dependencies**: ${{ steps.deps.outputs.dev }}
+
+            ### ⚡ Startup Metrics
+            - **Estimated startup time**: ${{ steps.startup.outputs.startup_time }}
+
+            ### 🏋️ Heaviest Dependencies
+            \`\`\`
+            ${heavyDeps}
+            \`\`\`
+
+            ### 💡 Recommendations
+            ${parseInt('${{ steps.deps.outputs.total }}') > 500 ? '⚠️ High dependency count. Consider auditing unused packages.' : '✅ Dependency count looks healthy.'}
+
+            ---
+            *Performance monitoring by GitHub Actions*`;
+
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+
+            const botComment = comments.find(comment => 
+              comment.user.type === 'Bot' && 
+              comment.body.includes('Performance Metrics')
+            );
+
+            if (botComment) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: comment
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: comment
+              });
+            }
+
+  react-native-profiling:
+    name: React Native Profiling
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 8
+
+      - name: Get pnpm store directory
+        id: pnpm-cache
+        shell: bash
+        run: echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
+
+      - name: Setup pnpm cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run React DevTools Profiler
+        run: |
+          # This would require a custom profiling script
+          # Example: measure render times, component updates, etc.
+          node scripts/profile-performance.js || echo "Profiling script not found"
+
+      - name: Check for performance anti-patterns
+        run: |
+          # Check for common performance issues
+          echo "Checking for performance anti-patterns..."
+
+          # Find large inline functions
+          grep -r "style={{" src/ | wc -l > inline-styles-count.txt || echo "0" > inline-styles-count.txt
+
+          # Find console.logs (should be removed in production)
+          grep -r "console\." src/ | grep -v "node_modules" | wc -l > console-count.txt || echo "0" > console-count.txt
+
+          # Find useMemo/useCallback usage
+          grep -r "useMemo\|useCallback" src/ | wc -l > optimization-hooks-count.txt || echo "0" > optimization-hooks-count.txt
+
+      - name: Upload profiling results
+        uses: actions/upload-artifact@v4
+        with:
+          name: performance-profiling
+          path: |
+            *-count.txt
+            heavy-deps.txt

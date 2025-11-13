@@ -1,0 +1,173 @@
+# .github/workflows/bundle-size.yml
+name: Bundle Size Analysis
+
+on:
+  pull_request:
+    branches: [main, develop]
+  push:
+    branches: [main]
+
+jobs:
+  analyze-bundle:
+    name: Analyze Bundle Size
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      contents: read
+    steps:
+      - name: Checkout PR branch
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 8
+
+      - name: Get pnpm store directory
+        id: pnpm-cache
+        shell: bash
+        run: echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
+
+      - name: Setup pnpm cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build and analyze current bundle
+        run: |
+          npx expo export --platform all
+          CURRENT_SIZE=$(du -sh dist | cut -f1)
+          echo "CURRENT_SIZE=$CURRENT_SIZE" >> $GITHUB_ENV
+
+          # Get detailed breakdown
+          echo "## Bundle Contents" > bundle-report.txt
+          find dist -type f -name "*.js" -exec du -h {} \; | sort -rh | head -20 >> bundle-report.txt
+
+      - name: Checkout base branch
+        if: github.event_name == 'pull_request'
+        run: |
+          git fetch origin ${{ github.base_ref }}
+          git checkout origin/${{ github.base_ref }}
+
+      - name: Build and analyze base bundle
+        if: github.event_name == 'pull_request'
+        run: |
+          npm ci
+          npx expo export --platform all
+          BASE_SIZE=$(du -sh dist | cut -f1)
+          echo "BASE_SIZE=$BASE_SIZE" >> $GITHUB_ENV
+
+      - name: Compare bundle sizes
+        if: github.event_name == 'pull_request'
+        id: compare
+        run: |
+          # Convert sizes to bytes for comparison
+          current_bytes=$(du -sb dist | cut -f1)
+          git checkout ${{ github.event.pull_request.head.sha }}
+          npm ci
+          npx expo export --platform all
+          pr_bytes=$(du -sb dist | cut -f1)
+
+          diff=$((pr_bytes - current_bytes))
+          diff_percent=$(awk "BEGIN {printf \"%.2f\", ($diff / $current_bytes) * 100}")
+
+          echo "diff=$diff" >> $GITHUB_OUTPUT
+          echo "diff_percent=$diff_percent" >> $GITHUB_OUTPUT
+          echo "pr_size=$(numfmt --to=iec $pr_bytes)" >> $GITHUB_OUTPUT
+          echo "base_size=$(numfmt --to=iec $current_bytes)" >> $GITHUB_OUTPUT
+
+      - name: Comment on PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const diff = parseInt('${{ steps.compare.outputs.diff }}');
+            const diffPercent = parseFloat('${{ steps.compare.outputs.diff_percent }}');
+            const prSize = '${{ steps.compare.outputs.pr_size }}';
+            const baseSize = '${{ steps.compare.outputs.base_size }}';
+
+            let emoji = '📊';
+            let status = 'unchanged';
+
+            if (diff > 0) {
+              emoji = diffPercent > 5 ? '⚠️' : '📈';
+              status = 'increased';
+            } else if (diff < 0) {
+              emoji = '✅';
+              status = 'decreased';
+            }
+
+            const comment = `## ${emoji} Bundle Size Report
+
+            | Metric | Value |
+            |--------|-------|
+            | **Base Size** | ${baseSize} |
+            | **PR Size** | ${prSize} |
+            | **Change** | ${diff > 0 ? '+' : ''}${(diff / 1024).toFixed(2)} KB (${diffPercent > 0 ? '+' : ''}${diffPercent}%) |
+            | **Status** | ${status} |
+
+            ${diffPercent > 5 ? '⚠️ **Warning**: Bundle size increased by more than 5%' : ''}
+            ${diffPercent > 10 ? '🚨 **Critical**: Bundle size increased by more than 10%! Please review.' : ''}
+
+            <details>
+            <summary>📦 Largest files in bundle</summary>
+
+            \`\`\`
+            $(cat bundle-report.txt)
+            \`\`\`
+            </details>
+
+            ---
+            *Bundle analysis powered by GitHub Actions*`;
+
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+
+            const botComment = comments.find(comment => 
+              comment.user.type === 'Bot' && 
+              comment.body.includes('Bundle Size Report')
+            );
+
+            if (botComment) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: comment
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: comment
+              });
+            }
+
+            // Fail if bundle size increased too much
+            if (diffPercent > 10) {
+              core.setFailed('Bundle size increased by more than 10%');
+            }
+
+      - name: Upload bundle analysis
+        uses: actions/upload-artifact@v4
+        with:
+          name: bundle-analysis
+          path: |
+            dist/
+            bundle-report.txt
