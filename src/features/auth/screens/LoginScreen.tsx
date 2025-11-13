@@ -1,7 +1,3 @@
-
-
 export function LoginScreen() {
-  return (
-    <></>
-  );
+  return <></>;
 }

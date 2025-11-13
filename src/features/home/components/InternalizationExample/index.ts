@@ -1,1 +1,1 @@
-export { InternalizationExample } from "./InternalizationExample";
+export { InternalizationExample } from './InternalizationExample';

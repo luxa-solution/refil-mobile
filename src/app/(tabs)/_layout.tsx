@@ -1,7 +1,7 @@
-import { HeaderButton, TabBarIcon } from '@/shared/components';
 import { Link, Tabs } from 'expo-router';
-
 import { useUnistyles } from 'react-native-unistyles';
+
+import { HeaderButton, TabBarIcon } from '@/shared/components';
 
 export default function TabLayout() {
   const { theme } = useUnistyles();

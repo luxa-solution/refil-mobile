@@ -6,8 +6,8 @@ import { InternalizationExample, ScreenContent } from '@/features/home/component
 export function ScreenOne() {
   return (
     <>
-      <Stack.Screen options={ { title: 'Tab One' } } />
-      <View style={ styles.container }>
+      <Stack.Screen options={{ title: 'Tab One' }} />
+      <View style={styles.container}>
         <ScreenContent path="features/home/ScreenOne.tsx" title="Refil">
           <InternalizationExample />
         </ScreenContent>
@@ -16,10 +16,10 @@ export function ScreenOne() {
   );
 }
 
-const styles = StyleSheet.create( ( theme ) => ( {
+const styles = StyleSheet.create((theme) => ({
   container: {
     flex: 1,
     padding: 24,
     backgroundColor: theme.colors.background,
   },
-} ) );
+}));

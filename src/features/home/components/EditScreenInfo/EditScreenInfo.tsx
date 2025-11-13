@@ -1,7 +1,6 @@
-import { Text, View } from 'react-native';
-import { styles } from './EditScreenInfo.style'
-
 import { useTranslation } from 'react-i18next';
+import { Text, View } from 'react-native';
+import { styles } from './EditScreenInfo.style';
 
 export const EditScreenInfo = ({ path }: { path: string }) => {
   const { t } = useTranslation();

@@ -1,7 +1,7 @@
-import { StyleSheet } from "react-native-unistyles";
+import { StyleSheet } from 'react-native-unistyles';
 
-export const styles = StyleSheet.create( {
+export const styles = StyleSheet.create({
   headerRight: {
     marginRight: 15,
   },
-} );
+});

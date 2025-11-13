@@ -1,6 +1,6 @@
-import { StyleSheet } from "react-native-unistyles";
+import { StyleSheet } from 'react-native-unistyles';
 
-export const styles = StyleSheet.create( ( theme ) => ( {
+export const styles = StyleSheet.create((theme) => ({
   button: {
     alignItems: 'center',
     backgroundColor: theme.colors.cornflowerBlue,
@@ -23,4 +23,4 @@ export const styles = StyleSheet.create( ( theme ) => ( {
     fontWeight: '600',
     textAlign: 'center',
   },
-} ) );
+}));

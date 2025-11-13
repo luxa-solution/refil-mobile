@@ -8,7 +8,7 @@ export default function RootLayout() {
 
   return (
     <Stack
-      initialRouteName='(tabs)'
+      initialRouteName="(tabs)"
       screenOptions={{
         headerStyle: {
           backgroundColor: theme.colors.background,

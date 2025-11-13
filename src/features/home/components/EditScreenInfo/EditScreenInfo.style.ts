@@ -1,6 +1,6 @@
-import { StyleSheet } from "react-native-unistyles";
+import { StyleSheet } from 'react-native-unistyles';
 
-export const styles = StyleSheet.create( ( theme ) => ( {
+export const styles = StyleSheet.create((theme) => ({
   codeHighlightContainer: {
     borderRadius: 3,
     paddingHorizontal: 4,
@@ -32,4 +32,4 @@ export const styles = StyleSheet.create( ( theme ) => ( {
   homeScreenFilename: {
     marginVertical: 7,
   },
-} ) );
+}));

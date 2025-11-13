@@ -6,18 +6,18 @@ import { ScreenContent } from '@/features/home/components';
 export function ScreenTwo() {
   return (
     <>
-      <Stack.Screen options={ { title: 'Tab Two' } } />
-      <View style={ styles.container }>
+      <Stack.Screen options={{ title: 'Tab Two' }} />
+      <View style={styles.container}>
         <ScreenContent path="features/home/ScreenTwo.tsx" title="Tab Two" />
       </View>
     </>
   );
 }
 
-const styles = StyleSheet.create( ( theme ) => ( {
+const styles = StyleSheet.create((theme) => ({
   container: {
     flex: 1,
     padding: 24,
     backgroundColor: theme.colors.background,
   },
-} ) );
+}));
