@@ -17,6 +17,8 @@ jobs:
     steps:
       - name: Checkout PR branch
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -25,8 +27,6 @@ jobs:
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v3
-        with:
-          version: 8
 
       - name: Get pnpm store directory
         id: pnpm-cache
@@ -46,9 +46,9 @@ jobs:
 
       - name: Build and analyze current bundle
         run: |
-          npx expo export --platform all
-          CURRENT_SIZE=$(du -sh dist | cut -f1)
-          echo "CURRENT_SIZE=$CURRENT_SIZE" >> $GITHUB_ENV
+          pnpm expo export --platform all
+          echo "PR_SIZE=$(du -sh dist | cut -f1)" >> $GITHUB_ENV
+          echo "PR_BYTES=$(du -sb dist | cut -f1)" >> $GITHUB_ENV
 
           # Get detailed breakdown
           echo "## Bundle Contents" > bundle-report.txt
@@ -63,29 +63,30 @@ jobs:
       - name: Build and analyze base bundle
         if: github.event_name == 'pull_request'
         run: |
-          npm ci
-          npx expo export --platform all
+          pnpm install --frozen-lockfile
+          pnpm expo export --platform all
           BASE_SIZE=$(du -sh dist | cut -f1)
           echo "BASE_SIZE=$BASE_SIZE" >> $GITHUB_ENV
+          echo "BASE_BYTES=$(du -sb dist | cut -f1)" >> $GITHUB_ENV
 
       - name: Compare bundle sizes
         if: github.event_name == 'pull_request'
         id: compare
         run: |
-          # Convert sizes to bytes for comparison
-          current_bytes=$(du -sb dist | cut -f1)
-          git checkout ${{ github.event.pull_request.head.sha }}
-          npm ci
-          npx expo export --platform all
-          pr_bytes=$(du -sb dist | cut -f1)
-
-          diff=$((pr_bytes - current_bytes))
-          diff_percent=$(awk "BEGIN {printf \"%.2f\", ($diff / $current_bytes) * 100}")
+          diff=$(($PR_BYTES - $BASE_BYTES))
+          
+          diff_percent=$(awk "BEGIN {
+            if ($BASE_BYTES == 0) {
+              printf \"0\"
+            } else {
+              printf \"%.2f\", ($diff / $BASE_BYTES) * 100
+            }
+          }")
 
           echo "diff=$diff" >> $GITHUB_OUTPUT
           echo "diff_percent=$diff_percent" >> $GITHUB_OUTPUT
-          echo "pr_size=$(numfmt --to=iec $pr_bytes)" >> $GITHUB_OUTPUT
-          echo "base_size=$(numfmt --to=iec $current_bytes)" >> $GITHUB_OUTPUT
+          echo "pr_size=$PR_SIZE" >> $GITHUB_OUTPUT
+          echo "base_size=$BASE_SIZE" >> $GITHUB_OUTPUT
 
       - name: Comment on PR
         if: github.event_name == 'pull_request'
