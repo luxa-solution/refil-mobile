@@ -7,15 +7,25 @@ updates:
       day: 'monday'
     open-pull-requests-limit: 10
     versioning-strategy: increase
+    ignore:
+      - dependency-name: 'react'
+        update-types:
+          - 'version-update:semver-major'
+      - dependency-name: 'react-native'
+        update-types:
+          - 'version-update:semver-major'
+      - dependency-name: '@types/react'
+        update-types:
+          - 'version-update:semver-major'
     groups:
-      react-native:
-        patterns:
-          - 'react-native*'
-          - '@react-native*'
       expo:
         patterns:
           - 'expo*'
           - '@expo*'
+      react-native:
+        patterns:
+          - 'react-native*'
+          - '@react-native*'
       testing:
         patterns:
           - '@testing-library/*'
