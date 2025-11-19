@@ -79,3 +79,10 @@ pnpm format
 
 - English (en)
 - French (fr)
+
+## Branch Strategy
+
+This project follows a standard branching strategy across all repositories for consistent workflows and releases. See the general reference document for details:
+
+- General: `docs/git_branch_strategy_general.md`
+- Primary: `docs/git_branch_strategy.md`
