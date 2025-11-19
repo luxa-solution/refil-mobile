@@ -5,7 +5,7 @@ updates:
     schedule:
       interval: 'weekly'
       day: 'monday'
-    open-pull-requests-limit: 10
+    open-pull-requests-limit: 5
     versioning-strategy: increase
     ignore:
       - dependency-name: 'react'
@@ -20,16 +20,27 @@ updates:
     groups:
       expo:
         patterns:
-          - 'expo*'
-          - '@expo*'
-      react-native:
+          - '^expo'
+          - '^@expo'
+      react-ecosystem:
         patterns:
-          - 'react-native*'
-          - '@react-native*'
+          - '^react(-.*)?$'
+          - '^@react(-.*)?$'
+          - '^react-native'
+          - '^@react-native'
+          - '^@react-navigation'
+      i18n:
+        patterns:
+          - '^i18next$'
+          - '^react-i18next$'
+      tanstack:
+        patterns:
+          - 'tanstack'
+          - '^@tanstack'
       testing:
         patterns:
-          - '@testing-library/*'
-          - 'jest*'
+          - '^@testing-library/'
+          - '^jest'
       development:
         dependency-type: 'development'
         update-types:
