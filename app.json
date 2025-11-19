@@ -5,8 +5,15 @@
     "version": "0.0.1",
     "newArchEnabled": true,
     "scheme": "refil-mobile",
-    "platforms": ["ios", "android"],
-    "plugins": ["expo-router", "expo-localization", "expo-font"],
+    "platforms": [
+      "ios",
+      "android"
+    ],
+    "plugins": [
+      "expo-router",
+      "expo-localization",
+      "expo-font"
+    ],
     "experiments": {
       "typedRoutes": true,
       "tsconfigPaths": true
@@ -19,7 +26,9 @@
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
-    "assetBundlePatterns": ["**/*"],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
       "supportsTablet": true
     },
@@ -29,6 +38,13 @@
         "backgroundColor": "#ffffff"
       },
       "package": "com.luxasolution.refilmobile"
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "a463cdd8-3b31-4580-9d66-de386e88d6ba"
+      }
+    },
+    "owner": "luxa-digitals"
   }
 }
