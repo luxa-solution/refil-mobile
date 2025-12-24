@@ -15,7 +15,7 @@ export default function TabLayout() {
         headerTitleStyle: {
           color: theme.colors.typography,
         },
-        tabBarActiveTintColor: theme.colors.astral,
+        tabBarActiveTintColor: theme.colors.primaryDefault,
         tabBarStyle: {
           backgroundColor: theme.colors.background,
         },
@@ -26,7 +26,7 @@ export default function TabLayout() {
           title: 'Tab One',
           tabBarIcon: ({ color }) => <TabBarIcon name="code" color={color} />,
           headerRight: () => (
-            <Link href="/" asChild>
+            <Link href={'/(tabs)' as any} asChild>
               <HeaderButton />
             </Link>
           ),

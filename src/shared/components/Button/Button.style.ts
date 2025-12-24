@@ -3,7 +3,7 @@ import { StyleSheet } from 'react-native-unistyles';
 export const styles = StyleSheet.create((theme) => ({
   button: {
     alignItems: 'center',
-    backgroundColor: theme.colors.cornflowerBlue,
+    backgroundColor: theme.colors.primaryDefault,
     borderRadius: 24,
     elevation: 5,
     flexDirection: 'row',

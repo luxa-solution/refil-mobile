@@ -1,9 +1,17 @@
 import { StyleSheet } from 'react-native-unistyles';
 
-export const styles = StyleSheet.create((theme, rt) => ({
-  container: {
+export const styles = StyleSheet.create((theme) => ({
+  screen: {
     flex: 1,
-    paddingBottom: rt.insets.bottom,
+  },
+  themedContainer: {
+    flex: 1,
     backgroundColor: theme.colors.background,
+  },
+  content: {
+    flex: 1,
+  },
+  keyboardWrapper: {
+    flex: 1,
   },
 }));

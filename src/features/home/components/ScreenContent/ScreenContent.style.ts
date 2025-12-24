@@ -12,7 +12,8 @@ export const styles = StyleSheet.create((theme) => ({
     height: 1,
     marginVertical: 30,
     width: '80%',
-    backgroundColor: theme.colors.limedSpruce,
+    backgroundColor:
+      (theme.colors as any).slate?.[500] || (theme.colors as any).surfaceSecondary || '#EAEDF1',
   },
   title: {
     fontSize: 20,
