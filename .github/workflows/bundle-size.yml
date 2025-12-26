@@ -44,15 +44,70 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Build and analyze current bundle
+      - name: Bundle React Native (Android/iOS)
         run: |
-          pnpm expo export --platform all
-          echo "PR_SIZE=$(du -sh dist | cut -f1)" >> $GITHUB_ENV
-          echo "PR_BYTES=$(du -sb dist | cut -f1)" >> $GITHUB_ENV
+          mkdir -p bundle/android bundle/ios
+          # Android Metro bundle
+          pnpx react-native bundle \
+            --platform android \
+            --dev false \
+            --entry-file index.js \
+            --bundle-output bundle/index.android.bundle \
+            --assets-dest bundle/android || {
+              echo "React Native CLI not found or failed."
+              exit 1
+            }
 
-          # Get detailed breakdown
-          echo "## Bundle Contents" > bundle-report.txt
-          find dist -type f -name "*.js" -exec du -h {} \; | sort -rh | head -20 >> bundle-report.txt
+          # iOS Metro bundle
+          pnpx react-native bundle \
+            --platform ios \
+            --dev false \
+            --entry-file index.js \
+            --bundle-output bundle/index.ios.bundle \
+            --assets-dest bundle/ios || {
+              echo "React Native CLI not found or failed."
+              exit 1
+            }
+
+          # Compute PR bundle sizes
+          ANDROID_BYTES=$(wc -c < bundle/index.android.bundle || echo 0)
+          IOS_BYTES=$(wc -c < bundle/index.ios.bundle || echo 0)
+          ANDROID_ASSETS_BYTES=$(du -sb bundle/android | cut -f1 || echo 0)
+          IOS_ASSETS_BYTES=$(du -sb bundle/ios | cut -f1 || echo 0)
+
+          echo "PR_ANDROID_BYTES=$ANDROID_BYTES" >> $GITHUB_ENV
+          echo "PR_IOS_BYTES=$IOS_BYTES" >> $GITHUB_ENV
+          echo "PR_ANDROID_ASSETS_BYTES=$ANDROID_ASSETS_BYTES" >> $GITHUB_ENV
+          echo "PR_IOS_ASSETS_BYTES=$IOS_ASSETS_BYTES" >> $GITHUB_ENV
+
+          echo "PR_ANDROID_SIZE=$(du -h bundle/index.android.bundle | cut -f1)" >> $GITHUB_ENV
+          echo "PR_IOS_SIZE=$(du -h bundle/index.ios.bundle | cut -f1)" >> $GITHUB_ENV
+          echo "PR_ANDROID_ASSETS_SIZE=$(du -sh bundle/android | cut -f1)" >> $GITHUB_ENV
+          echo "PR_IOS_ASSETS_SIZE=$(du -sh bundle/ios | cut -f1)" >> $GITHUB_ENV
+
+          # Build APK size if android project exists (optional)
+          if [ -d android ]; then
+            echo "Android project detected. Attempting assembleDebug for APK size..."
+            sudo apt-get update -y && sudo apt-get install -y openjdk-17-jdk || true
+            echo "sdk.dir=$HOME/Android/Sdk" >> android/local.properties || true
+            (cd android && ./gradlew assembleDebug --no-daemon) || echo "Gradle build failed, skipping APK size."
+            APK_PATH=$(find android/app/build/outputs/apk -name "*.apk" | head -n 1 || true)
+            if [ -n "$APK_PATH" ]; then
+              echo "PR_APK_SIZE=$(du -h "$APK_PATH" | cut -f1)" >> $GITHUB_ENV
+              echo "PR_APK_BYTES=$(du -sb "$APK_PATH" | cut -f1)" >> $GITHUB_ENV
+            else
+              echo "PR_APK_SIZE=N/A" >> $GITHUB_ENV
+              echo "PR_APK_BYTES=0" >> $GITHUB_ENV
+            fi
+          else
+            echo "No native android/ directory. Skipping APK size."
+            echo "PR_APK_SIZE=N/A" >> $GITHUB_ENV
+            echo "PR_APK_BYTES=0" >> $GITHUB_ENV
+          fi
+
+          # Top files report
+          echo "## Largest JS bundles" > bundle-report.txt
+          du -h bundle/index.android.bundle bundle/index.ios.bundle 2>/dev/null | sort -rh >> bundle-report.txt
 
       - name: Checkout base branch
         if: github.event_name == 'pull_request'
@@ -64,29 +119,39 @@ jobs:
         if: github.event_name == 'pull_request'
         run: |
           pnpm install --frozen-lockfile
-          pnpm expo export --platform all
-          BASE_SIZE=$(du -sh dist | cut -f1)
-          echo "BASE_SIZE=$BASE_SIZE" >> $GITHUB_ENV
-          echo "BASE_BYTES=$(du -sb dist | cut -f1)" >> $GITHUB_ENV
+          mkdir -p bundle_base/android bundle_base/ios
+          pnpx react-native bundle \
+            --platform android \
+            --dev false \
+            --entry-file index.js \
+            --bundle-output bundle_base/index.android.bundle \
+            --assets-dest bundle_base/android || echo "Base android bundle failed"
+
+          pnpx react-native bundle \
+            --platform ios \
+            --dev false \
+            --entry-file index.js \
+            --bundle-output bundle_base/index.ios.bundle \
+            --assets-dest bundle_base/ios || echo "Base iOS bundle failed"
+
+          echo "BASE_ANDROID_BYTES=$(wc -c < bundle_base/index.android.bundle || echo 0)" >> $GITHUB_ENV
+          echo "BASE_IOS_BYTES=$(wc -c < bundle_base/index.ios.bundle || echo 0)" >> $GITHUB_ENV
+          echo "BASE_ANDROID_ASSETS_BYTES=$(du -sb bundle_base/android | cut -f1 || echo 0)" >> $GITHUB_ENV
+          echo "BASE_IOS_ASSETS_BYTES=$(du -sb bundle_base/ios | cut -f1 || echo 0)" >> $GITHUB_ENV
 
       - name: Compare bundle sizes
         if: github.event_name == 'pull_request'
         id: compare
         run: |
-          diff=$(($PR_BYTES - $BASE_BYTES))
-          
-          diff_percent=$(awk "BEGIN {
-            if ($BASE_BYTES == 0) {
-              printf \"0\"
-            } else {
-              printf \"%.2f\", ($diff / $BASE_BYTES) * 100
-            }
-          }")
+          ANDROID_DIFF=$(($PR_ANDROID_BYTES - ${BASE_ANDROID_BYTES:-0}))
+          IOS_DIFF=$(($PR_IOS_BYTES - ${BASE_IOS_BYTES:-0}))
+          ANDROID_PCT=$(awk "BEGIN { base=${BASE_ANDROID_BYTES:-0}; if (base==0) {printf \"0\"} else {printf \"%.2f\", ($PR_ANDROID_BYTES - base)/base*100} }")
+          IOS_PCT=$(awk "BEGIN { base=${BASE_IOS_BYTES:-0}; if (base==0) {printf \"0\"} else {printf \"%.2f\", ($PR_IOS_BYTES - base)/base*100} }")
 
-          echo "diff=$diff" >> $GITHUB_OUTPUT
-          echo "diff_percent=$diff_percent" >> $GITHUB_OUTPUT
-          echo "pr_size=$PR_SIZE" >> $GITHUB_OUTPUT
-          echo "base_size=$BASE_SIZE" >> $GITHUB_OUTPUT
+          echo "android_diff=$ANDROID_DIFF" >> $GITHUB_OUTPUT
+          echo "ios_diff=$IOS_DIFF" >> $GITHUB_OUTPUT
+          echo "android_pct=$ANDROID_PCT" >> $GITHUB_OUTPUT
+          echo "ios_pct=$IOS_PCT" >> $GITHUB_OUTPUT
 
       - name: Comment on PR
         if: github.event_name == 'pull_request'
@@ -94,44 +159,47 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const diff = parseInt('${{ steps.compare.outputs.diff }}');
-            const diffPercent = parseFloat('${{ steps.compare.outputs.diff_percent }}');
-            const prSize = '${{ steps.compare.outputs.pr_size }}';
-            const baseSize = '${{ steps.compare.outputs.base_size }}';
+            const prAndroidSize = process.env.PR_ANDROID_SIZE || 'N/A';
+            const prIosSize = process.env.PR_IOS_SIZE || 'N/A';
+            const prAndroidAssetsSize = process.env.PR_ANDROID_ASSETS_SIZE || 'N/A';
+            const prIosAssetsSize = process.env.PR_IOS_ASSETS_SIZE || 'N/A';
+            const prApkSize = process.env.PR_APK_SIZE || 'N/A';
 
-            let emoji = '📊';
-            let status = 'unchanged';
+            const androidDiff = parseInt('${{ steps.compare.outputs.android_diff }}' || '0');
+            const iosDiff = parseInt('${{ steps.compare.outputs.ios_diff }}' || '0');
+            const androidPct = parseFloat('${{ steps.compare.outputs.android_pct }}' || '0');
+            const iosPct = parseFloat('${{ steps.compare.outputs.ios_pct }}' || '0');
 
-            if (diff > 0) {
-              emoji = diffPercent > 5 ? '⚠️' : '📈';
-              status = 'increased';
-            } else if (diff < 0) {
-              emoji = '✅';
-              status = 'decreased';
-            }
+            const androidStatus = androidDiff > 0 ? 'increased' : androidDiff < 0 ? 'decreased' : 'unchanged';
+            const iosStatus = iosDiff > 0 ? 'increased' : iosDiff < 0 ? 'decreased' : 'unchanged';
+            const androidEmoji = androidDiff > 0 ? (androidPct > 5 ? '⚠️' : '📈') : androidDiff < 0 ? '✅' : '📊';
+            const iosEmoji = iosDiff > 0 ? (iosPct > 5 ? '⚠️' : '📈') : iosDiff < 0 ? '✅' : '📊';
 
-            const comment = `## ${emoji} Bundle Size Report
+            const comment = `## 📊 React Native Bundle Size Report
 
-            | Metric | Value |
-            |--------|-------|
-            | **Base Size** | ${baseSize} |
-            | **PR Size** | ${prSize} |
-            | **Change** | ${diff > 0 ? '+' : ''}${(diff / 1024).toFixed(2)} KB (${diffPercent > 0 ? '+' : ''}${diffPercent}%) |
-            | **Status** | ${status} |
+            ### Android
+            - **Bundle**: ${prAndroidSize}
+            - **Assets**: ${prAndroidAssetsSize}
+            - **Change**: ${androidDiff > 0 ? '+' : ''}${(androidDiff/1024).toFixed(2)} KB (${androidPct > 0 ? '+' : ''}${androidPct}%) ${androidEmoji} (${androidStatus})
+            - **APK (debug)**: ${prApkSize}
 
-            ${diffPercent > 5 ? '⚠️ **Warning**: Bundle size increased by more than 5%' : ''}
-            ${diffPercent > 10 ? '🚨 **Critical**: Bundle size increased by more than 10%! Please review.' : ''}
+            ### iOS
+            - **Bundle**: ${prIosSize}
+            - **Assets**: ${prIosAssetsSize}
+            - **Change**: ${iosDiff > 0 ? '+' : ''}${(iosDiff/1024).toFixed(2)} KB (${iosPct > 0 ? '+' : ''}${iosPct}%) ${iosEmoji} (${iosStatus})
+
+            ${androidPct > 10 || iosPct > 10 ? '🚨 **Critical**: One platform increased by more than 10% — please review.' : (androidPct > 5 || iosPct > 5) ? '⚠️ **Warning**: Bundle size increased by more than 5%.' : '✅ Bundle sizes look healthy.'}
 
             <details>
-            <summary>📦 Largest files in bundle</summary>
+            <summary>📦 Bundle files</summary>
 
             \`\`\`
-            $(cat bundle-report.txt)
+            ${require('fs').readFileSync('bundle-report.txt','utf8')}
             \`\`\`
             </details>
 
             ---
-            *Bundle analysis powered by GitHub Actions*`;
+            *RN bundle analysis powered by GitHub Actions*`;
 
             const { data: comments } = await github.rest.issues.listComments({
               owner: context.repo.owner,
@@ -160,15 +228,16 @@ jobs:
               });
             }
 
-            // Fail if bundle size increased too much
-            if (diffPercent > 10) {
-              core.setFailed('Bundle size increased by more than 10%');
+            // Fail if either platform increased too much
+            if (androidPct > 10 || iosPct > 10) {
+              core.setFailed('Bundle size increased by more than 10% on at least one platform');
             }
 
       - name: Upload bundle analysis
         uses: actions/upload-artifact@v4
         with:
-          name: bundle-analysis
+          name: rn-bundle-analysis
           path: |
-            dist/
+            bundle/
+            bundle_base/
             bundle-report.txt

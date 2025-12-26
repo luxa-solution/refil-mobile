@@ -1,12 +1,7 @@
 # .github/workflows/github-release.yml
-name: GitHub Release with Builds
+name: Manual GitHub Release (Legacy)
 
 on:
-  push:
-    tags:
-      - "v*.*.*"
-      - "v*.*.*-beta.*"
-      - "v*.*.*-alpha.*"
   workflow_dispatch:
     inputs:
       tag:

@@ -6,6 +6,19 @@ on:
     branches: [main]
     tags:
       - "v*"
+  workflow_call:
+    inputs:
+      platform:
+        description: "Platform to build"
+        required: true
+        type: string
+      profile:
+        description: "Build profile"
+        required: true
+        type: string
+    secrets:
+      EXPO_TOKEN:
+        required: true
   workflow_dispatch:
     inputs:
       platform:
@@ -27,7 +40,7 @@ on:
 
 jobs:
   build:
-    name: EAS Build - ${{ github.event.inputs.platform || 'all' }}
+    name: EAS Build - ${{ inputs.platform || github.event.inputs.platform || 'all' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -37,7 +50,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: "20"
-        
+
       - name: Setup pnpm
         uses: pnpm/action-setup@v3
 
@@ -65,9 +78,9 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Build iOS app
-        if: ${{ github.event.inputs.platform == 'ios' || github.event.inputs.platform == 'all' || github.event_name == 'push' }}
-        run: eas build --platform ios --profile ${{ github.event.inputs.profile || 'preview' }} --non-interactive
+        if: ${{ (inputs.platform == 'ios') || (inputs.platform == 'all') || (github.event.inputs.platform == 'ios') || (github.event.inputs.platform == 'all') || (github.event_name == 'push') }}
+        run: eas build --platform ios --profile ${{ inputs.profile || github.event.inputs.profile || 'preview' }} --non-interactive
 
       - name: Build Android app
-        if: ${{ github.event.inputs.platform == 'android' || github.event.inputs.platform == 'all' || github.event_name == 'push' }}
-        run: eas build --platform android --profile ${{ github.event.inputs.profile || 'preview' }} --non-interactive
+        if: ${{ (inputs.platform == 'android') || (inputs.platform == 'all') || (github.event.inputs.platform == 'android') || (github.event.inputs.platform == 'all') || (github.event_name == 'push') }}
+        run: eas build --platform android --profile ${{ inputs.profile || github.event.inputs.profile || 'preview' }} --non-interactive

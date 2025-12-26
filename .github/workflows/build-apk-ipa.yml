@@ -196,6 +196,7 @@ jobs:
             }
 
   build-ios:
+    if: false
     name: Build iOS IPA
     runs-on: macos-14
     permissions:

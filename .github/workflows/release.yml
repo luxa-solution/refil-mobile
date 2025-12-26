@@ -53,55 +53,20 @@ jobs:
           draft: false
           prerelease: ${{ contains(github.ref_name, 'beta') || contains(github.ref_name, 'alpha') }}
 
-  build-production:
-    name: Build Production Apps
+  build-ios:
+    name: Trigger EAS iOS Production Build
     needs: create-release
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+    uses: ./.github/workflows/eas-build.yml
+    secrets: inherit
+    with:
+      platform: ios
+      profile: production
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "20"
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v3
-
-      - name: Get pnpm store directory
-        id: pnpm-cache
-        shell: bash
-        run: echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
-
-      - name: Setup pnpm cache
-        uses: actions/cache@v4
-        with:
-          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
-          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-pnpm-store-
-
-      - name: Setup Expo and EAS
-        uses: expo/expo-github-action@v8
-        with:
-          expo-version: latest
-          eas-version: latest
-          token: ${{ secrets.EXPO_TOKEN }}
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Build iOS Production
-        run: |
-          eas build --platform ios \
-            --profile production \
-            --non-interactive \
-            --auto-submit
-
-      - name: Build Android Production
-        run: |
-          eas build --platform android \
-            --profile production \
-            --non-interactive \
-            --auto-submit
+  build-android:
+    name: Trigger EAS Android Production Build
+    needs: create-release
+    uses: ./.github/workflows/eas-build.yml
+    secrets: inherit
+    with:
+      platform: android
+      profile: production
