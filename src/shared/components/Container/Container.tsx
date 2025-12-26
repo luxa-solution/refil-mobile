@@ -1,3 +1,8 @@
+/**
+ * `ScreenContainer` provides a safe-area aware screen wrapper with optional padding,
+ * theming, scroll handling, and iOS keyboard avoidance. It centralizes common
+ * screen scaffolding concerns for consistent layouts.
+ */
 import { ReactNode } from 'react';
 import {
   KeyboardAvoidingView,
@@ -10,15 +15,40 @@ import {
   useColorScheme,
 } from 'react-native';
 import { Edge, SafeAreaView } from 'react-native-safe-area-context';
-import { hp, wp } from '../../../core/styles/responsive_scale';
+import { hp, wp } from '@/core/styles/responsive_scale';
 import { styles } from './Container.style';
 
 const isIOS = () => Platform.OS === 'ios';
 
+/**
+ * Convenience constant for horizontal edges.
+ */
 export const edgesHorizontal = ['left', 'right'] as Edge[];
+/**
+ * Convenience constant for vertical edges.
+ */
 export const edgesVertical = ['top', 'bottom'] as Edge[];
+/**
+ * Convenience constant for all edges.
+ */
 export const edgesAll = [...edgesHorizontal, ...edgesVertical] as Edge[];
 
+/**
+ * Props for `ScreenContainer`.
+ *
+ * - `containerStyle`: Style applied to the outer SafeAreaView.
+ * - `contentStyle`: Style applied to the inner content wrapper.
+ * - `withPadding`: Enables horizontal/vertical padding via `paddingHorizontal`/`paddingVertical`.
+ * - `paddingHorizontal`/`paddingVertical`: Padding values in DP, scaled using `wp`/`hp`.
+ * - `edges`: Safe-area edges to include; defaults to left, right, top.
+ * - `statusBarStyle`/`hideStatusBar`: Reserved for status bar control (currently not used here).
+ * - `backgroundColor`: Explicit background; if omitted, uses light/dark theme based on `useColorScheme`.
+ * - `isLoading`: Reserved for future loading states.
+ * - `scrollable`: When true, wraps content in `ScrollView` and forwards `scrollViewProps`.
+ * - `keyboardShouldAvoidView`: When true on iOS, wraps with `KeyboardAvoidingView`.
+ * - `useThemedView`: Reserved for theme-driven variants (default true).
+ * - `forceTheme`: Override system theme (`'light' | 'dark'`).
+ */
 export interface ScreenContainerProps {
   children?: ReactNode;
   containerStyle?: StyleProp<ViewStyle>;

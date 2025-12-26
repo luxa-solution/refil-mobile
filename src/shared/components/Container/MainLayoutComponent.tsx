@@ -1,3 +1,9 @@
+/**
+ * `MainLayoutComponent` establishes the app's common screen layout patterns:
+ * safe-area handling, optional scrolling with pull-to-refresh, keyboard gestures,
+ * background theming, and status bar styling. Use it as the outer wrapper for
+ * feature screens to ensure consistent behavior across platforms.
+ */
 import { FC, PropsWithChildren, ReactNode, useMemo } from 'react';
 import {
   ColorValue,
@@ -15,11 +21,29 @@ import {
 } from 'react-native-keyboard-controller';
 import { Edge, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StyleSheet } from 'react-native-unistyles';
-import { lightTheme } from '../../../core/styles/theme';
-import globalStyle from '../../utils/globalStyle';
+import { lightTheme } from '@/core/styles/theme';
+import globalStyle from '@/shared/utils/globalStyle';
 import Box, { ColorToken } from './Box';
 
 const colors = lightTheme.colors as any;
+/**
+ * Props for `MainLayoutComponent`.
+ *
+ * - `children`: Screen content.
+ * - `lightBar`: When true with `showBg`, uses `light-content` status bar.
+ * - `transparent`: Reserved for transparent backgrounds.
+ * - `scrollEnabled`: Wraps content in `KeyboardAwareScrollView` when true.
+ * - `showBg`: Toggles status bar style (paired with `lightBar`).
+ * - `variant`: Layout variant flag (`'main' | 'secondary'`).
+ * - `hideTouchable`: When true, disables the outer `TouchableWithoutFeedback`.
+ * - `isRefreshing`: Pull-to-refresh state for the scroll view.
+ * - `showIndicator`: Controls the vertical scroll indicator visibility.
+ * - `bounces`: Enables iOS bounce behavior in the scroll view.
+ * - `avoidKeyboard`: Wraps children in `KeyboardAvoidingView` when true.
+ * - `onRefresh`: Callback for pull-to-refresh.
+ * - `edges`: Safe-area edges to include in `SafeAreaInsetView`.
+ * - `backgroundColor`: Themed color token or raw color for the outer container.
+ */
 interface MainLayoutProps {
   children: ReactNode;
   lightBar?: boolean;
@@ -92,6 +116,12 @@ const MainLayoutComponent: FC<MainLayoutProps> = ({
   );
 };
 
+/**
+ * Internal content wrapper for `MainLayoutComponent` that manages:
+ * - Status bar style based on `showBg`/`lightBar`.
+ * - Keyboard dismissal via `TouchableWithoutFeedback`.
+ * - Optional `KeyboardAvoidingView` when `avoidKeyboard` is true.
+ */
 const InnerItem: FC<
   Pick<
     MainLayoutProps,
@@ -132,12 +162,24 @@ const InnerItem: FC<
   );
 };
 
+/**
+ * Props for `SafeAreaInsetView`.
+ *
+ * - `edges`: Safe-area edges to include for automatic padding.
+ * - `style`: Additional container styles.
+ * - `testID`: Optional test identifier.
+ * - `backgroundColor`: Themed color token or raw color applied to the container.
+ */
 interface insetProps {
   edges?: Edge[];
   style?: StyleProp<ViewStyle>;
   testID?: string;
   backgroundColor?: ColorToken;
 }
+/**
+ * Safe-area aware container that applies padding based on the requested `edges`.
+ * Accepts a themed `backgroundColor` token or raw color string.
+ */
 export const SafeAreaInsetView: FC<PropsWithChildren<insetProps>> = ({
   edges = ['top', 'bottom'],
   style,

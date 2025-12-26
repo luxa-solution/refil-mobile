@@ -4,7 +4,7 @@ import {
   ms as moderateScale,
   wp as scale,
   hp as verticalScale,
-} from '../../core/styles/responsive_scale';
+} from '@/core/styles/responsive_scale';
 
 // export const { width, height } = Dimensions.get("window");
 export const { width, height } = UnistylesRuntime.screen;
