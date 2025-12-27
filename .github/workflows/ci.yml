@@ -22,6 +22,8 @@ jobs:
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v3
+        with:
+          version: 10.12.1
 
       - name: Get pnpm store directory
         id: pnpm-cache
@@ -56,9 +58,11 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: "20"
-          
-      - name: Setup pnpm 
+
+      - name: Setup pnpm
         uses: pnpm/action-setup@v3
+        with:
+          version: 10.12.1
 
       - name: Get pnpm store directory
         id: pnpm-cache
@@ -100,6 +104,8 @@ jobs:
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v3
+        with:
+          version: 10.12.1
 
       - name: Get pnpm store directory
         id: pnpm-cache
@@ -137,16 +143,18 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: "20"
-      
-      - name: Setup pnpm  # <-- ADD
-        uses: pnpm/action-setup@v3
 
-      - name: Get pnpm store directory  # <-- ADD
+      - name: Setup pnpm # <-- ADD
+        uses: pnpm/action-setup@v3
+        with:
+          version: 10.12.1
+
+      - name: Get pnpm store directory # <-- ADD
         id: pnpm-cache
         shell: bash
         run: echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
 
-      - name: Setup pnpm cache  # <-- ADD
+      - name: Setup pnpm cache # <-- ADD
         uses: actions/cache@v4
         with:
           path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
@@ -154,7 +162,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pnpm-store-
 
-      - name: Install dependencies  # <-- ADD
+      - name: Install dependencies # <-- ADD
         run: pnpm install --frozen-lockfile
 
       - name: Run npm audit
