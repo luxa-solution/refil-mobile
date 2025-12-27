@@ -2,13 +2,25 @@
 name: PR Preview
 
 on:
+  workflow_dispatch: # Allow manual trigger
+  issue_comment:
+    types: [created]
   pull_request:
     types: [opened, synchronize, reopened]
+    branches: [main, develop]
+    # Only run if PR has label 'preview' or comment contains '/preview'
 
 jobs:
   preview:
     name: Build Preview & Comment
     runs-on: ubuntu-latest
+    # Only run if: manual trigger, PR with 'preview' label, or comment contains '/preview'
+    if: |
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'preview')) ||
+      (github.event_name == 'issue_comment' && 
+       github.event.issue.pull_request && 
+       contains(github.event.comment.body, '/preview'))
     permissions:
       pull-requests: write
       contents: read
@@ -23,6 +35,8 @@ jobs:
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v3
+        with:
+          version: 10.12.1
 
       - name: Get pnpm store directory
         id: pnpm-cache

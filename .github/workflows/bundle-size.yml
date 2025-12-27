@@ -2,10 +2,9 @@
 name: Bundle Size Analysis
 
 on:
-  pull_request:
-    branches: [main, develop]
-  push:
-    branches: [main]
+  schedule:
+    - cron: "0 0 * * 0" # Weekly on Sunday at midnight UTC
+  workflow_dispatch: # Allow manual trigger
 
 jobs:
   analyze-bundle:
@@ -27,6 +26,8 @@ jobs:
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v3
+        with:
+          version: 10.12.1
 
       - name: Get pnpm store directory
         id: pnpm-cache

@@ -4,8 +4,11 @@
   "editor.formatOnSave": true,
   "editor.defaultFormatter": "esbenp.prettier-vscode",
   "editor.codeActionsOnSave": {
-    "source.fixAll.eslint": "explicit"
+    "source.fixAll.eslint": "explicit",
+    "source.organizeImports": "explicit",
+    "source.sortImports": "explicit"
   },
+  "prettier.requireConfig": true,
   "[javascript]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
