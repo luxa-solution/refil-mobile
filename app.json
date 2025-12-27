@@ -36,6 +36,12 @@
         "projectId": "a463cdd8-3b31-4580-9d66-de386e88d6ba"
       }
     },
-    "owner": "luxa-digitals"
+    "owner": "luxa-digitals",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/a463cdd8-3b31-4580-9d66-de386e88d6ba"
+    }
   }
 }
