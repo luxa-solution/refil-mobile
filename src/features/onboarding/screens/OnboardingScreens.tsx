@@ -40,7 +40,7 @@ export const OnboardingScreens = () => {
   const handleAdvance = () => {
     if (isLast) {
       setHasOnboarded(true);
-      router.replace('/(tabs)' as Href);
+      router.replace('/auth/welcome' as Href);
       return;
     }
     const nextIndex = Math.min(localIndex + 1, total - 1);

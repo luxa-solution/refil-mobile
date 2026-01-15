@@ -17,9 +17,11 @@ export default function RootLayout() {
           color: theme.colors.typography,
         },
         headerTintColor: theme.colors.typography,
+        headerShown: false,
       }}>
-      <Stack.Screen name="onboarding" options={{ headerShown: false }} />
-      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+      <Stack.Screen name="onboarding" />
+      <Stack.Screen name="auth" />
+      <Stack.Screen name="(tabs)" />
     </Stack>
   );
 }
