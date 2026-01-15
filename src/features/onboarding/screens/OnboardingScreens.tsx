@@ -1,4 +1,4 @@
-import { useRouter } from 'expo-router';
+import { Href, useRouter } from 'expo-router';
 import React, { useMemo, useRef, useState } from 'react';
 import { FlatList, ListRenderItem, View } from 'react-native';
 
@@ -33,14 +33,14 @@ export const OnboardingScreens = () => {
   // Handle skip: mark complete and navigate to main tabs
   const handleSkip = () => {
     setHasOnboarded(true);
-    router.replace('/(tabs)' as any);
+    router.replace('/(tabs)' as Href);
   };
 
   // Handle next/continue: advance slide or complete onboarding
   const handleAdvance = () => {
     if (isLast) {
       setHasOnboarded(true);
-      router.replace('/(tabs)' as any);
+      router.replace('/(tabs)' as Href);
       return;
     }
     const nextIndex = Math.min(localIndex + 1, total - 1);
