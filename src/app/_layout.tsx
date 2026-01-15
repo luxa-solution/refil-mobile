@@ -8,7 +8,7 @@ export default function RootLayout() {
 
   return (
     <Stack
-      initialRouteName="(tabs)"
+      initialRouteName="onboarding"
       screenOptions={{
         headerStyle: {
           backgroundColor: theme.colors.background,
@@ -18,6 +18,7 @@ export default function RootLayout() {
         },
         headerTintColor: theme.colors.typography,
       }}>
+      <Stack.Screen name="onboarding" options={{ headerShown: false }} />
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
     </Stack>
   );

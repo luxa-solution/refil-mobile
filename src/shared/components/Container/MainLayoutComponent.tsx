@@ -8,24 +8,24 @@ import { FC, PropsWithChildren, ReactNode, useMemo } from 'react';
 import {
   ColorValue,
   Keyboard,
-  RefreshControl,
+  // RefreshControl,
   StatusBar,
   StyleProp,
   TouchableWithoutFeedback,
   ViewStyle,
 } from 'react-native';
-import {
-  KeyboardAvoidingView,
-  KeyboardAwareScrollView,
-  KeyboardGestureArea,
-} from 'react-native-keyboard-controller';
+// import {
+//   KeyboardAvoidingView,
+//   KeyboardAwareScrollView,
+//   KeyboardGestureArea,
+// } from 'react-native-keyboard-controller';
 import { Edge, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StyleSheet } from 'react-native-unistyles';
 import { lightTheme } from '@/core/styles/theme';
 import globalStyle from '@/shared/utils/globalStyle';
 import Box, { ColorToken } from './Box';
 
-const colors = lightTheme.colors as any;
+// const colors = lightTheme.colors as any;
 /**
  * Props for `MainLayoutComponent`.
  *
@@ -82,7 +82,7 @@ const MainLayoutComponent: FC<MainLayoutProps> = ({
               backgroundColor: 'transparent',
             },
           ]}>
-          <KeyboardGestureArea
+          {/* <KeyboardGestureArea
             interpolator="ios"
             enableSwipeToDismiss
             style={[globalStyle.flexOne]}>
@@ -109,7 +109,7 @@ const MainLayoutComponent: FC<MainLayoutProps> = ({
                 <InnerItem {...props} lightBar showBg={showBg} />
               </Box>
             )}
-          </KeyboardGestureArea>
+          </KeyboardGestureArea> */}
         </Box>
       </SafeAreaInsetView>
     </>
@@ -148,13 +148,13 @@ const InnerItem: FC<
             accessible={false}
             onPress={Keyboard.dismiss}
             style={[globalStyle.flexOne, globalStyle.w10]}>
-            {avoidKeyboard ? (
+            {/* {avoidKeyboard ? (
               <KeyboardAvoidingView behavior="height" style={[globalStyle.flexOne]}>
                 {children}
               </KeyboardAvoidingView>
             ) : (
               children
-            )}
+            )} */}
           </TouchableWithoutFeedback>
         )}
       </Box>
