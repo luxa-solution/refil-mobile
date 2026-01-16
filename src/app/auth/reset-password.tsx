@@ -1,5 +1,5 @@
-import { ResetPasswordScreen } from '@/features/auth/screens/ResetPassword';
+import { PasswordScreen } from '@/features/auth/screens/Password';
 
 export default function LoginRoute() {
-  return <ResetPasswordScreen />;
+  return <PasswordScreen mode="reset" />;
 }
