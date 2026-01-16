@@ -2,20 +2,24 @@ import { Href, useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { Text, View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
+import { verifyOtpMutation } from '../api/mutations/verify-otp';
 import { PrimaryButton } from '../components/buttons/PrimaryButton';
 import { OtpField } from '../components/inputs/OtpField';
 import { Container } from '../components/layout/Container';
 import { ContentTitle } from '../components/layout/ContentTitle';
 import { StepDots } from '../components/layout/StepDots';
 import { useOtp, useResendTimer } from '../hooks/useOtp';
-import { useAuthFlowStore } from '../store/authStore';
+import { useAuthFlowStore } from '../store/authFlowStore';
+import { useAuthTokenStore } from '../store/authTokenStore';
 
 export function OtpVerifyScreen() {
   const router = useRouter();
 
+  const mode = useAuthFlowStore((s) => s.mode);
   const phoneNumber = useAuthFlowStore((s) => s.phoneNumber);
   const nextAfterVerify = useAuthFlowStore((s) => s.nextAfterVerify);
-  const setNextAfterVerify = useAuthFlowStore((s) => s.setNextAfterVerify);
+
+  const setOtp = useAuthFlowStore((s) => s.setOtp);
 
   const otp = useOtp(4);
   const timer = useResendTimer(30);
@@ -24,33 +28,37 @@ export function OtpVerifyScreen() {
   const [loading, setLoading] = useState(false);
   const [resendLoading, setResendLoading] = useState(false);
 
+  const setTokens = useAuthTokenStore((s) => s.setTokens);
+
   const verify = async () => {
     setError(undefined);
+
+    if (!mode) return setError('Invalid flow. Please restart.');
     if (!otp.isComplete) return;
+    if (!phoneNumber) return setError('Missing phone number. Restart flow.');
 
     setLoading(true);
-    try {
-      // TODO: replace with real verify OTP mutation when endpoint is confirmed
-      // await verifyOtpMutation({ phoneNumber, code: otp.value });
+    const res = await verifyOtpMutation({ phoneNumber, otp: otp.value });
+    setLoading(false);
 
-      // decide next
-      // signup -> add-location, reset -> reset-password
-      const next = nextAfterVerify ?? 'add-location';
-      setNextAfterVerify(next);
+    if (!res.ok) return setError(res.error);
 
-      router.push('/auth/verification-status' as Href);
-    } catch (e: any) {
-      setError(e?.message ?? 'Verification failed');
-    } finally {
-      setLoading(false);
-    }
+    // store otp for reset-password endpoint query param
+    setOtp(otp.value);
+
+    // TODO: if verify-otp returns tokens, store them here
+    const accessToken = (res.data as any)?.accessToken ?? (res.data as any)?.token;
+    const refreshToken = (res.data as any)?.refreshToken;
+    if (accessToken) setTokens({ accessToken, refreshToken });
+
+    router.push('/auth/verification-status' as Href);
   };
 
   const resend = async () => {
     if (!timer.canResend) return;
     setResendLoading(true);
     try {
-      // TODO: await sendOtpMutation({ phoneNumber })
+      // TODO: implement resend endpoint (swagger shows /forgot-password but not explicit resend)
       timer.start();
     } catch (e: any) {
       setError(e?.message ?? 'Resend failed');
@@ -58,6 +66,10 @@ export function OtpVerifyScreen() {
       setResendLoading(false);
     }
   };
+
+  // dots: signup flow has more steps than reset flow
+  const dotsCount = mode === 'signup' ? 4 : 3;
+  const activeIndex = mode === 'signup' ? 3 : 2;
 
   return (
     <Container>
@@ -88,7 +100,7 @@ export function OtpVerifyScreen() {
           </Text>
         </View>
 
-        <StepDots activeIndex={3} count={4} />
+        <StepDots activeIndex={activeIndex} count={dotsCount} />
       </View>
     </Container>
   );

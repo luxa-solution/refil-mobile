@@ -1,9 +1,7 @@
+const testingBaseUrl = 'https://refil.onrender.com';
+const productionBaseUrl = 'https://refil.com';
+
 export const API_CONFIG = {
-  // testing env from your docs
-  testingBaseUrl: 'https://refil.onrender.com',
-  // you said production is refill.com
-  productionBaseUrl: 'https://refil.com',
-  // pick based on __DEV__
-  baseUrl: __DEV__ ? 'https://refil.onrender.com' : 'https://refill.com',
+  baseURL: __DEV__ ? testingBaseUrl : productionBaseUrl,
   timeoutMs: 30_000,
 } as const;

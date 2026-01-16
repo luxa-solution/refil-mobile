@@ -8,7 +8,7 @@ import { TextField } from '../components/inputs/TextField';
 import { Container } from '../components/layout/Container';
 import { ContentTitle } from '../components/layout/ContentTitle';
 import { StepDots } from '../components/layout/StepDots';
-import { useAuthFlowStore } from '../store/authStore';
+import { useAuthFlowStore } from '../store/authFlowStore';
 
 export function AddPasswordScreen() {
   const router = useRouter();
@@ -26,30 +26,30 @@ export function AddPasswordScreen() {
 
   const submit = async () => {
     setError(undefined);
+
     if (password.length < 6) return setError('Password must be at least 6 characters');
     if (password !== confirm) return setError('Passwords do not match');
     if (!phoneNumber || !firstName || !lastName)
       return setError('Missing signup details. Please restart signup.');
 
     setLoading(true);
-    try {
-      // await registerMutation({
-      //   firstName,
-      //   lastName,
-      //   phoneNumber,
-      //   password,
-      //   roles: [ 'user' ],
-      // });
 
-      setMode('signup');
-      setNextAfterVerify('add-location');
+    const res = await registerMutation({
+      firstName,
+      lastName,
+      phoneNumber,
+      password,
+      roles: ['user'], // TODO: confirm backend role values
+    });
 
-      router.replace('/auth/otp-verify' as Href);
-    } catch (e: any) {
-      setError(e?.response?.data?.message ?? e?.message ?? 'Registration failed');
-    } finally {
-      setLoading(false);
-    }
+    setLoading(false);
+
+    if (!res.ok) return setError(res.error);
+
+    setMode('signup');
+    setNextAfterVerify('add-location');
+
+    router.replace('/auth/otp-verify' as Href);
   };
 
   return (

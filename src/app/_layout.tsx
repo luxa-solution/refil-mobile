@@ -1,10 +1,16 @@
 import { Stack } from 'expo-router';
+import { useEffect } from 'react';
 import { useUnistyles } from 'react-native-unistyles';
 
+import { setupAuthInterceptors } from '@/features/auth/api/setupAuthInterceptors';
 import '@/translation';
 
 export default function RootLayout() {
   const { theme } = useUnistyles();
+
+  useEffect(() => {
+    setupAuthInterceptors();
+  }, []);
 
   return (
     <Stack

@@ -1,13 +1,13 @@
 import { ApiResult, toApiError } from '@/core/api/api-types';
 import { api } from '@/core/api/client';
-import type { AuthResponseDto, RegisterRequestDto } from '@/features/auth/types/auth.dto';
+import type { ForgotPasswordRequestDto } from '@/features/auth/types/auth.dto';
 import { AUTH_ENDPOINTS } from '../endpoints';
 
-export async function registerMutation(
-  body: RegisterRequestDto
-): Promise<ApiResult<AuthResponseDto>> {
+export async function forgotPasswordMutation(
+  body: ForgotPasswordRequestDto
+): Promise<ApiResult<unknown>> {
   try {
-    const res = await api.post(AUTH_ENDPOINTS.register, body);
+    const res = await api.post(AUTH_ENDPOINTS.forgotPassword, body);
     return {
       ok: true,
       data: res.data,

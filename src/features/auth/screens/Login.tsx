@@ -3,11 +3,13 @@ import React, { useState } from 'react';
 import { Text, View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 
+import { loginMutation } from '../api/mutations/login';
 import { PrimaryButton } from '../components/buttons/PrimaryButton';
 import { PhoneField } from '../components/inputs/PhoneField';
 import { TextField } from '../components/inputs/TextField';
 import { Container } from '../components/layout/Container';
 import { ContentTitle } from '../components/layout/ContentTitle';
+import { useAuthTokenStore } from '../store/authTokenStore';
 import { isValidPhone } from '../utils/phone';
 
 export function LoginScreen() {
@@ -18,21 +20,33 @@ export function LoginScreen() {
   const [err, setErr] = useState<string | undefined>();
   const [loading, setLoading] = useState(false);
 
+  const setTokens = useAuthTokenStore((s) => s.setTokens);
+
   const submit = async () => {
     setErr(undefined);
     if (!isValidPhone(phone)) return setErr('Enter a valid phone number');
     if (!password) return setErr('Enter your password');
 
     setLoading(true);
-    try {
-      // TODO: replace with real login mutation when you confirm endpoint + response tokens
-      // await loginMutation({ phoneNumber: phone, password });
-      router.replace('/(tabs)' as Href);
-    } catch (e: any) {
-      setErr(e?.message ?? 'Login failed');
-    } finally {
-      setLoading(false);
+
+    const res = await loginMutation({ phoneNumber: phone, password });
+
+    setLoading(false);
+
+    if (!res.ok) return setErr(res.error);
+
+    // TODO: confirm token response shape from /login
+    const accessToken = (res.data as any)?.accessToken ?? (res.data as any)?.token;
+    const refreshToken = (res.data as any)?.refreshToken;
+
+    if (accessToken) {
+      setTokens({ accessToken, refreshToken });
+    } else {
+      // TODO: if backend doesn't return tokens here, decide next step
+      // (maybe verify-otp returns token? maybe separate session endpoint?)
     }
+
+    router.replace('/(tabs)' as Href);
   };
 
   return (

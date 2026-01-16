@@ -1,29 +1,32 @@
 import { Href, useRouter } from 'expo-router';
 import React, { useEffect } from 'react';
-import { View, Text } from 'react-native';
+import { Text, View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
-import { SuccessState } from '../components/feedback/SuccessState';
 import { Container } from '../components/layout/Container';
 import { ContentTitle } from '../components/layout/ContentTitle';
-import { useAuthFlowStore } from '../store/authStore';
+import { useAuthFlowStore } from '../store/authFlowStore';
 
 export function VerificationStatusScreen() {
   const router = useRouter();
+
+  const mode = useAuthFlowStore((s) => s.mode);
   const nextAfterVerify = useAuthFlowStore((s) => s.nextAfterVerify);
-  const resetFlow = useAuthFlowStore((s) => s.resetFlow);
 
   useEffect(() => {
     const t = setTimeout(() => {
-      if (nextAfterVerify === 'reset-password') {
+      if (mode === 'reset') {
         router.replace('/auth/reset-password' as Href);
-      } else {
-        resetFlow();
-        router.replace('/auth/add-location' as Href);
+        return;
       }
+
+      // signup
+      const next = nextAfterVerify ?? 'add-location';
+      if (next === 'add-location') router.replace('/auth/add-location' as Href);
+      else router.replace('/auth/add-location' as Href); // fallback
     }, 2_000);
 
     return () => clearTimeout(t);
-  }, [nextAfterVerify, resetFlow, router]);
+  }, [mode, nextAfterVerify, router]);
 
   return (
     <Container isVerification={true}>

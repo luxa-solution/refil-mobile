@@ -1,31 +1,107 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import type { AxiosInstance } from 'axios';
+import type { AxiosError, InternalAxiosRequestConfig } from 'axios';
+import { api } from './client';
 
-const ACCESS_TOKEN_KEY = 'auth-access-token';
+type TokenGetter = () => string | null;
+type TokenSetter = (accessToken: string, refreshToken?: string) => void;
+type TokenClearer = () => void;
 
-async function getAccessToken() {
-  try {
-    return await AsyncStorage.getItem(ACCESS_TOKEN_KEY);
-  } catch {
-    return null;
+type RefreshHandler = (refreshToken: string) => Promise<{
+  ok: boolean;
+  accessToken?: string;
+  refreshToken?: string;
+}>;
+
+let getAccessToken: TokenGetter = () => null;
+let getRefreshToken: TokenGetter = () => null;
+let setTokens: TokenSetter = () => {};
+let clearTokens: TokenClearer = () => {};
+let refreshHandler: RefreshHandler | null = null;
+
+export function configureAuthInterceptors(opts: {
+  getAccessToken: TokenGetter;
+  getRefreshToken: TokenGetter;
+  setTokens: TokenSetter;
+  clearTokens: TokenClearer;
+  refresh: RefreshHandler;
+}) {
+  getAccessToken = opts.getAccessToken;
+  getRefreshToken = opts.getRefreshToken;
+  setTokens = opts.setTokens;
+  clearTokens = opts.clearTokens;
+  refreshHandler = opts.refresh;
+}
+
+// Attach bearer token
+api.interceptors.request.use(async (config: InternalAxiosRequestConfig) => {
+  const token = getAccessToken();
+  if (token) {
+    config.headers = config.headers ?? {};
+    config.headers.Authorization = `Bearer ${token}`;
   }
+  return config;
+});
+
+// Refresh on 401 (single retry) – refresh logic injected
+let isRefreshing = false;
+let queue: ((token: string | null) => void)[] = [];
+
+function subscribe(cb: (token: string | null) => void) {
+  queue.push(cb);
+}
+function flush(token: string | null) {
+  queue.forEach((cb) => cb(token));
+  queue = [];
 }
 
-export function attachInterceptors(client: AxiosInstance) {
-  client.interceptors.request.use(async (config) => {
-    const token = await getAccessToken();
-    if (token) {
-      config.headers = config.headers ?? {};
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  });
+api.interceptors.response.use(
+  (res) => res,
+  async (error: AxiosError) => {
+    const status = error.response?.status;
+    const original: any = error.config;
 
-  client.interceptors.response.use(
-    (res) => res,
-    (err) => {
-      // Optionally normalize errors here
-      return Promise.reject(err);
+    if (status !== 401 || original?._retry) return Promise.reject(error);
+    original._retry = true;
+
+    const rt = getRefreshToken();
+    if (!rt || !refreshHandler) {
+      clearTokens();
+      return Promise.reject(error);
     }
-  );
-}
+
+    if (isRefreshing) {
+      return new Promise((resolve, reject) => {
+        subscribe((newToken) => {
+          if (!newToken) return reject(error);
+          original.headers = original.headers ?? {};
+          original.headers.Authorization = `Bearer ${newToken}`;
+          resolve(api(original));
+        });
+      });
+    }
+
+    isRefreshing = true;
+
+    try {
+      const refreshed = await refreshHandler(rt);
+
+      if (!refreshed.ok || !refreshed.accessToken) {
+        clearTokens();
+        flush(null);
+        return Promise.reject(error);
+      }
+
+      setTokens(refreshed.accessToken, refreshed.refreshToken);
+      flush(refreshed.accessToken);
+
+      original.headers = original.headers ?? {};
+      original.headers.Authorization = `Bearer ${refreshed.accessToken}`;
+      return api(original);
+    } catch (e) {
+      clearTokens();
+      flush(null);
+      return Promise.reject(error);
+    } finally {
+      isRefreshing = false;
+    }
+  }
+);

@@ -8,14 +8,12 @@ import { TextField } from '../components/inputs/TextField';
 import { Container } from '../components/layout/Container';
 import { ContentTitle } from '../components/layout/ContentTitle';
 import { StepDots } from '../components/layout/StepDots';
-import { useAuthFlowStore } from '../store/authStore';
+import { useAuthFlowStore } from '../store/authFlowStore';
 import { isValidPhone } from '../utils/phone';
 
 export function CreateAccountScreen() {
   const router = useRouter();
-  const setMode = useAuthFlowStore((s) => s.setMode);
-  const setPhoneNumber = useAuthFlowStore((s) => s.setPhoneNumber);
-  const setSignupName = useAuthFlowStore((s) => s.setSignupName);
+  const setSignupDetails = useAuthFlowStore((s) => s.setSignupDetails);
 
   const [phone, setPhone] = useState('');
   const [firstName, setFirst] = useState('');
@@ -30,9 +28,11 @@ export function CreateAccountScreen() {
     setErr(nextErr);
     if (Object.keys(nextErr).length) return;
 
-    setMode('signup');
-    setPhoneNumber(phone);
-    setSignupName(firstName.trim(), lastName.trim());
+    setSignupDetails({
+      phoneNumber: phone,
+      firstName: firstName.trim(),
+      lastName: lastName.trim(),
+    });
 
     router.push('/auth/add-password' as Href);
   };

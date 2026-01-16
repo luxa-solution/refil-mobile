@@ -6,7 +6,7 @@ import { OutlineButton } from '../components/buttons/OutlineButton';
 import { PrimaryButton } from '../components/buttons/PrimaryButton';
 import { Container } from '../components/layout/Container';
 import { ContentTitle } from '../components/layout/ContentTitle';
-import { useAuthFlowStore } from '../store/authStore';
+import { useAuthFlowStore } from '../store/authFlowStore';
 
 export function WelcomeScreen() {
   const router = useRouter();

@@ -2,15 +2,17 @@ import { Href, useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
+import { resetPasswordMutation } from '../api/mutations/reset-password';
 import { PrimaryButton } from '../components/buttons/PrimaryButton';
 import { TextField } from '../components/inputs/TextField';
 import { Container } from '../components/layout/Container';
 import { ContentTitle } from '../components/layout/ContentTitle';
-import { useAuthFlowStore } from '../store/authStore';
+import { useAuthFlowStore } from '../store/authFlowStore';
 
 export function ResetPasswordScreen() {
   const router = useRouter();
-  const phoneNumber = useAuthFlowStore((s) => s.phoneNumber);
+
+  const otp = useAuthFlowStore((s) => s.otp);
   const resetFlow = useAuthFlowStore((s) => s.resetFlow);
 
   const [password, setPassword] = useState('');
@@ -20,21 +22,27 @@ export function ResetPasswordScreen() {
 
   const submit = async () => {
     setErr(undefined);
+
+    if (!otp) return setErr('Missing OTP. Please restart reset password.');
     if (password.length < 6) return setErr('Password must be at least 6 characters');
     if (password !== confirm) return setErr('Passwords do not match');
 
     setLoading(true);
-    try {
-      // TODO: replace with real reset password endpoint when confirmed
-      // await resetPasswordMutation({ phoneNumber, password });
 
-      resetFlow();
-      router.replace('/auth/login' as Href);
-    } catch (e: any) {
-      setErr(e?.message ?? 'Reset failed');
-    } finally {
-      setLoading(false);
-    }
+    const res = await resetPasswordMutation(
+      { otp },
+      {
+        password,
+        // TODO: backend may require additional fields - confirm swagger behavior
+      }
+    );
+
+    setLoading(false);
+
+    if (!res.ok) return setErr(res.error);
+
+    resetFlow();
+    router.replace('/auth/login' as Href);
   };
 
   return (
