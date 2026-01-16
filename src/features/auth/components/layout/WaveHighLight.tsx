@@ -1,5 +1,5 @@
 import React from 'react';
-import Svg, { Defs, LinearGradient, Stop, Path } from 'react-native-svg';
+import { Defs, LinearGradient, Path, Stop } from 'react-native-svg';
 import { useUnistyles } from 'react-native-unistyles';
 
 type Props = {
@@ -7,19 +7,12 @@ type Props = {
   height: number;
 };
 
-/**
- * This draws the thin "ridge highlight" wave that sits above the main white wave.
- * It's built as:
- *  - A thicker translucent orange band (underlay)
- *  - A thin white line on top (highlight)
- */
 export function WaveHighlight({ width, height }: Props) {
   const { theme } = useUnistyles();
 
   return (
     <>
       <Defs>
-        {/* Subtle band gradient: darker in middle like Figma */}
         <LinearGradient id="waveHighlightGrad" x1="0%" y1="0%" x2="100%" y2="100%">
           <Stop offset="0%" stopColor={theme.colors.primary[500]} stopOpacity={0.78} />
           <Stop offset="100%" stopColor={theme.colors.primary[900]} stopOpacity={0.78} />

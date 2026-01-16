@@ -1,21 +1,34 @@
 import React from 'react';
-import { Dimensions, View } from 'react-native';
+import { Animated, Dimensions, View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
+import { useWaveTopAnimation } from '@/features/auth/hooks/useWaveTopAnimation';
 import { Header } from './Header';
 import { Wave } from './Wave';
 
 type Props = {
   children: React.ReactNode;
   isVerification?: boolean;
+  animateWave?: boolean;
 };
 
 const { height: screenHeight } = Dimensions.get('window');
 
-export function Container({ children, isVerification }: Props) {
+export function Container({ children, isVerification, animateWave = false }: Props) {
+  const waveHeight = 0.1 * screenHeight;
+
+  const animatedTop = useWaveTopAnimation({
+    enabled: animateWave,
+    finalTopPercent: 25,
+    fromTopPercent: 50,
+    durationMs: 650,
+  });
+
   return (
     <View style={styles.root}>
       <Header style={styles.header} isVerification={isVerification} />
-      <Wave style={styles.wave} height={0.1 * screenHeight} />
+      <Animated.View style={[styles.wave, { top: animatedTop }]}>
+        <Wave height={waveHeight} />
+      </Animated.View>
       <View style={styles.content}>{children}</View>
     </View>
   );
@@ -31,10 +44,10 @@ const styles = StyleSheet.create((theme) => ({
   },
   wave: {
     position: 'absolute',
-    top: '25%', // overlap into gradient like Figma
+    // top: '25%',
     left: -10,
     right: 10,
-    height: '10%',
+    // height: '10%',
   },
   content: {
     flex: 1,
