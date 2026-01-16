@@ -3,15 +3,9 @@ import { useCallback, useState } from 'react';
 
 import { loginMutation } from '../api/mutations/login';
 import { useAuthTokenStore } from '../store/authTokenStore';
+import { GeneralResponseDto } from '../types/dto';
 import { isValidPhone } from '../utils/phone';
-
-function extractTokens(data: unknown): { accessToken?: string; refreshToken?: string } {
-  const d: any = data;
-  return {
-    accessToken: d?.accessToken ?? d?.token,
-    refreshToken: d?.refreshToken,
-  };
-}
+import { extractAuthTokens } from '../utils/token';
 
 export function useLogin() {
   const router = useRouter();
@@ -37,10 +31,10 @@ export function useLogin() {
       if (!res.ok) return setErr(res.error);
 
       // TODO: confirm token response shape from /login
-      const { accessToken, refreshToken } = extractTokens(res.data);
+      const tokens = extractAuthTokens(res.data);
 
-      if (accessToken) {
-        setTokens({ accessToken, refreshToken });
+      if (tokens) {
+        setTokens(tokens);
       } else {
         // TODO: decide next step if backend doesn't return tokens here
       }

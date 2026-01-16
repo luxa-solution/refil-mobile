@@ -3,7 +3,7 @@ import { useCallback, useMemo, useState } from 'react';
 import { Alert } from 'react-native';
 
 import { useAuthFlowStore } from '../store/authFlowStore';
-import { AddressRequestDto } from '../types/auth.dto';
+import { AddressRequestDto } from '../types/dto';
 import { useDeviceLocation } from './useDeviceLocation';
 
 type Result = {

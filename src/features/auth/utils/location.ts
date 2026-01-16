@@ -1,5 +1,5 @@
 import type * as Location from 'expo-location';
-import type { AddressRequestDto } from '../types/auth.dto';
+import type { AddressRequestDto } from '../types/dto';
 
 type Coords = { latitude: number; longitude: number };
 

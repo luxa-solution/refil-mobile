@@ -4,10 +4,9 @@ import { useCallback, useState } from 'react';
 import { registerMutation } from '../api/mutations/register';
 import { resetPasswordMutation } from '../api/mutations/reset-password';
 import { useAuthFlowStore } from '../store/authFlowStore';
+import { AuthFlowMode } from '../types/flow';
 
-type Mode = 'signup' | 'reset';
-
-function validateMode(storeMode: Mode | null, mode: Mode): string | null {
+function validateMode(storeMode: AuthFlowMode | null, mode: AuthFlowMode): string | null {
   if (!storeMode) return 'Invalid flow. Please restart.';
   if (storeMode !== mode) return 'Flow mismatch. Please restart.';
   return null;
@@ -19,7 +18,7 @@ function validatePasswords(password: string, confirm: string): string | null {
   return null;
 }
 
-export function usePasswordSubmit(mode: Mode) {
+export function usePasswordSubmit(mode: AuthFlowMode) {
   const router = useRouter();
 
   const storeMode = useAuthFlowStore((s) => s.mode);

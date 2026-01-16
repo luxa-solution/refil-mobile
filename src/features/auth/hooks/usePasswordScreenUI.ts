@@ -1,8 +1,7 @@
 import { useMemo } from 'react';
+import { AuthFlowMode } from '../types/flow';
 
-type Mode = 'signup' | 'reset';
-
-export function usePasswordScreenUI(mode: Mode) {
+export function usePasswordScreenUI(mode: AuthFlowMode) {
   return useMemo(() => {
     if (mode === 'signup') {
       return {

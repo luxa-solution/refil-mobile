@@ -4,14 +4,7 @@ import { useCallback, useMemo, useState } from 'react';
 import { verifyOtpMutation } from '../api/mutations/verify-otp';
 import { useAuthFlowStore } from '../store/authFlowStore';
 import { useAuthTokenStore } from '../store/authTokenStore';
-
-function extractTokens(data: unknown): { accessToken?: string; refreshToken?: string } {
-  const d: any = data;
-  return {
-    accessToken: d?.accessToken ?? d?.token,
-    refreshToken: d?.refreshToken,
-  };
-}
+import { extractAuthTokens } from '../utils/token';
 
 type Params = {
   otp: { value: string; isComplete: boolean };
@@ -57,9 +50,8 @@ export function useOtpActions({ otp, timer }: Params) {
       setOtp(otp.value);
 
       // TODO: if verify-otp returns tokens, store them here
-      const { accessToken, refreshToken } = extractTokens(res.data);
-      if (accessToken) setTokens({ accessToken, refreshToken });
-
+      const tokens = extractAuthTokens(res.data);
+      if (tokens) setTokens(tokens);
       router.push('/auth/verification-status' as Href);
     } finally {
       setLoading(false);

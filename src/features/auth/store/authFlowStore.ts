@@ -1,13 +1,17 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
-
-export type AuthFlowMode = 'signup' | 'reset' | null;
-export type NextAfterVerify = 'add-location' | 'reset-password' | null;
+import {
+  AuthFlowMode,
+  AuthFlowModeOrNull,
+  NextAfterVerifyOrNull,
+  ResetDetails,
+  SignupDetails,
+} from '../types/flow';
 
 type AuthFlowState = {
   // shared
-  mode: AuthFlowMode;
+  mode: AuthFlowModeOrNull;
   phoneNumber: string;
 
   // signup-only
@@ -18,29 +22,29 @@ type AuthFlowState = {
   otp: string;
 
   // runtime-only (don’t persist)
-  nextAfterVerify: 'add-location' | 'reset-password' | null;
+  nextAfterVerify: NextAfterVerifyOrNull;
 
   // setters (atomic)
-  setMode: (mode: AuthFlowMode) => void;
+  setMode: (mode: AuthFlowModeOrNull) => void;
   setPhoneNumber: (phoneNumber: string) => void;
   setSignupName: (firstName: string, lastName: string) => void;
   setOtp: (otp: string) => void;
-  setNextAfterVerify: (next: AuthFlowState['nextAfterVerify']) => void;
+  setNextAfterVerify: (next: NextAfterVerifyOrNull) => void;
 
   // helpers (opinionated flow setters)
-  setSignupDetails: (args: { phoneNumber: string; firstName: string; lastName: string }) => void;
-  setResetDetails: (args: { phoneNumber: string }) => void;
+  setSignupDetails: (args: SignupDetails) => void;
+  setResetDetails: (args: ResetDetails) => void;
 
   resetFlow: () => void;
 };
 
 const initial = {
-  mode: null as AuthFlowMode,
+  mode: null as AuthFlowModeOrNull,
   phoneNumber: '',
   firstName: '',
   lastName: '',
   otp: '',
-  nextAfterVerify: null as NextAfterVerify,
+  nextAfterVerify: null as NextAfterVerifyOrNull,
 };
 
 export const useAuthFlowStore = create<AuthFlowState>()(
@@ -79,8 +83,6 @@ export const useAuthFlowStore = create<AuthFlowState>()(
     {
       name: 'signup-flow-storage',
       storage: createJSONStorage(() => AsyncStorage),
-      // do not persist runtime-only routing
-      partialize: ({ nextAfterVerify, ...rest }) => rest,
     }
   )
 );

@@ -1,11 +1,14 @@
 import { ApiResult, toApiError } from '@/core/api/api-types';
 import { api } from '@/core/api/client';
-import type { ForgotPasswordRequestDto } from '@/features/auth/types/auth.dto';
+import type {
+  ForgotPasswordRequestDto,
+  ForgotPasswordResponseDto,
+} from '@/features/auth/types/dto';
 import { AUTH_ENDPOINTS } from '../endpoints';
 
 export async function forgotPasswordMutation(
   body: ForgotPasswordRequestDto
-): Promise<ApiResult<unknown>> {
+): Promise<ApiResult<ForgotPasswordResponseDto>> {
   try {
     const res = await api.post(AUTH_ENDPOINTS.forgotPassword, body);
     return {

@@ -1,9 +1,9 @@
 import { ApiResult, toApiError } from '@/core/api/api-types';
 import { api } from '@/core/api/client';
-import type { AuthResponseDto, LoginRequestDto } from '@/features/auth/types/auth.dto';
+import type { LoginRequestDto, LoginResponseDto } from '@/features/auth/types/dto';
 import { AUTH_ENDPOINTS } from '../endpoints';
 
-export async function loginMutation(body: LoginRequestDto): Promise<ApiResult<AuthResponseDto>> {
+export async function loginMutation(body: LoginRequestDto): Promise<ApiResult<LoginResponseDto>> {
   try {
     const res = await api.post(AUTH_ENDPOINTS.login, body);
     return {
