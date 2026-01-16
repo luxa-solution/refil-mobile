@@ -1,184 +1,213 @@
 export const sharedColors = {
+  // DESIGN TOKENS
   primary: {
-    950: '#190A03',
-    900: '#331506',
-    800: '#65290C',
-    700: '#983E12',
-    600: '#CA5218',
-    500: '#FD671E',
-    400: '#FD854B',
-    300: '#FEA478',
-    200: '#FEC2A5',
-    150: '#FFE1D2',
-    100: '#FFE1D2',
+    50: '#fef2e7',
+    100: '#fdd8b3',
+    200: '#fcc58f',
+    300: '#faab5c',
+    400: '#f99a3c',
+    500: '#f8810b',
+    600: '#e2750a',
+    700: '#b05c08',
+    800: '#884706',
+    900: '#683605',
   },
-  information: {
-    950: '#00000A',
-    900: '#000014',
-    800: '#010129',
-    700: '#01013D',
-    600: '#020252',
-    500: '#020266',
-    400: '#353585',
-    300: '#6767A3',
-    200: '#9A9AC2',
-    150: '#B3B3D1',
-    100: '#CCCCE0',
+
+  secondary: {
+    50: '#e7eaf4',
+    100: '#b4bedc',
+    200: '#909ecb',
+    300: '#5e72b3',
+    400: '#3e56a5',
+    500: '#0e2c8e',
+    600: '#0d2881',
+    700: '#0a1f65',
+    800: '#08184e',
+    900: '#06123c',
   },
-  success: {
-    800: 'rgba(36, 89, 63, 1)',
-    700: 'rgba(55, 134, 95, 1)',
-    500: '#5BDF9E',
-    300: 'rgba(157, 236, 197, 1)',
-    100: 'rgba(222, 249, 236, 1)',
-    400: '#7CE5B1',
-    200: '#BDF2D8',
-    150: '#CEF5E2',
+
+  white: {
+    50: '#fefefe',
+    100: '#fcfcfc',
+    200: '#fbfbfb',
+    300: '#f9f9f9',
+    400: '#f8f8f8',
+    500: '#f6f6f6',
+    600: '#e0e0e0',
+    700: '#afafaf',
+    800: '#878787',
+    900: '#676767',
   },
-  warning: {
-    500: '#FBBF24',
-    600: '#C9991D',
-    400: '#FCCC50',
-    300: '#FDD97C',
-    200: '#FDE5A7',
-    150: '#FEECBD',
-    100: '#FEF2D3',
+
+  black: {
+    50: '#e7e7e7',
+    100: '#b6b6b6',
+    200: '#929292',
+    300: '#606060',
+    400: '#414141',
+    500: '#121212',
+    600: '#101010',
+    700: '#0d0d0d',
+    800: '#0a0a0a',
+    900: '#080808',
   },
-  error: {
-    950: '#160404',
-    900: '#2C0808',
-    800: '#580F0F',
-    700: '#841717',
-    600: '#B01E1E',
-    500: '#DC2626',
-    400: '#E35151',
-    300: '#EA7D7D',
-    200: '#F1A8A8',
-    150: '#F5BEBE',
-    100: '#F8D4D4',
-  },
-  slate: {
-    950: '#0F1012',
-    900: '#1E2125',
-    800: '#3B414A',
-    700: '#59626E',
-    600: '#768293',
-    500: '#94A3B8',
-    400: '#A9B5C6',
-    300: '#BFC8D4',
-    200: '#D4DAE3',
-    150: '#DFE3EA',
-    100: '#EAEDF1',
-  },
-  pastel: {
-    800: '#FFEEFF',
-    700: '#FFEBEB',
-    600: '#EBEBFF',
-    500: '#FFF9EB',
-    400: '#E3FFF1',
-    300: '#EFF6FF',
-    200: '#F6F8FA',
-    100: '#F8FAFC',
-  },
-  yellow: {
-    950: '#191304',
-    900: '#322607',
-    800: '#644C0E',
-    700: '#977316',
-    600: '#C9991D',
-    500: '#FBBF24',
-    400: '#FCCC50',
-    300: '#FDD97C',
-    200: '#FDE5A7',
-    150: '#FEECBD',
-    100: '#FEF2D3',
-  },
+
   green: {
-    950: '#091610',
-    900: '#122D20',
-    800: '#24593F',
-    700: '#37865F',
-    600: '#49B27E',
-    500: '#5BDF9E',
-    400: '#7CE5B1',
-    300: '#9DECC5',
-    200: '#BDF2D8',
-    150: '#CEF5E2',
-    100: '#DEF9EC',
+    50: '#e6fdea',
+    100: '#b2f9bf',
+    200: '#8cf7a0',
+    300: '#58f374',
+    400: '#37f159',
+    500: '#05ed30',
+    600: '#05d82c',
+    700: '#04a822',
+    800: '#03821a',
+    900: '#026414',
   },
+
+  red: {
+    50: '#f9e6e6',
+    100: '#edb0b0',
+    200: '#e48a8a',
+    300: '#d75454',
+    400: '#d03333',
+    500: '#c40000',
+    600: '#b20000',
+    700: '#8b0000',
+    800: '#6c0000',
+    900: '#520000',
+  },
+
+  /**
+   * BACKWARDS-COMPAT ALIASES
+   * Keep your existing usage working while migrating.
+   */
+  information: {} as any,
+  success: {} as any,
+  error: {} as any,
+  warning: {
+    // Your design system didn’t include a yellow scale in what you pasted.
+    // Keeping your existing warning scale so nothing breaks.
+    100: '#FEF2D3',
+    150: '#FEECBD',
+    200: '#FDE5A7',
+    300: '#FDD97C',
+    400: '#FCCC50',
+    500: '#FBBF24',
+    600: '#C9991D',
+  },
+
+  /**
+   * Neutrals for existing "slate" usage
+   * We map slate to a practical light-to-dark ramp using white/black tokens.
+   * You can refine this later if design provides a dedicated slate scale.
+   */
+  slate: {
+    100: '#fbfbfb', // white-200
+    150: '#f9f9f9', // white-300
+    200: '#f6f6f6', // white-500
+    300: '#e0e0e0', // white-600
+    400: '#afafaf', // white-700
+    500: '#878787', // white-800
+    600: '#676767', // white-900
+    700: '#606060', // black-300
+    800: '#414141', // black-400
+    900: '#121212', // black-500
+    950: '#080808', // black-900
+  },
+
   neutral: {
-    500: '#94A3B8',
-    150: '#DFE3EA',
-    100: '#EAEDF1',
+    // Keep a few of your old convenience keys
+    100: '#fbfbfb',
+    150: '#f9f9f9',
+    500: '#878787',
     gray500: '#939393',
     grey200: 'rgba(212, 212, 212, 1)',
   },
+
   misc: {
-    blue1_500: '#020266',
-    blue2_500: '#01013D',
-    blue400: 'rgba(53, 53, 133, 1)',
-    bgShade: 'rgba(250, 250, 250, 1)',
-    blueShade: 'rgba(204, 204, 224, 1)',
-    filesBg: 'rgba(249, 250, 251, 1)',
-    detailsBg: 'rgba(204, 204, 224, 1)',
-    whenInactive: 'rgba(238, 242, 255, 1)',
-    dividerColor: 'rgba(243, 244, 246, 1)',
-    orderStateBg: 'rgba(103, 103, 163, 1)',
-    vendorBg: 'rgba(239, 246, 255, 1)',
-    vendorBorder: 'rgba(219, 234, 254, 1)',
-    textWeightCol: 'rgba(148, 163, 184, 1)',
+    // If you were using these as “blues”, point them at secondary
+    blue1_500: '#0e2c8e', // secondary-500
+    blue2_500: '#0a1f65', // secondary-700
+    blue400: '#3e56a5', // secondary-400
+
+    bgShade: '#f9f9f9', // white-300
+    blueShade: '#b4bedc', // secondary-100
+    filesBg: '#fbfbfb', // white-200
+    detailsBg: '#b4bedc', // secondary-100
+    whenInactive: 'rgba(238, 242, 255, 1)', // leave as-is (custom)
+    dividerColor: 'rgba(243, 244, 246, 1)', // leave as-is (custom)
+    orderStateBg: '#909ecb', // secondary-200
+    vendorBg: 'rgba(239, 246, 255, 1)', // leave as-is (custom)
+    vendorBorder: 'rgba(219, 234, 254, 1)', // leave as-is (custom)
+    textWeightCol: '#878787', // white-800
   },
 } as const;
 
-// Map any remaining one-off tokens to primary scale where appropriate
+// fill aliases (must be after sharedColors exists)
+(sharedColors as any).information = sharedColors.secondary;
+(sharedColors as any).success = sharedColors.green;
+(sharedColors as any).error = sharedColors.red;
+
 export const lightTheme = {
   colors: {
     ...sharedColors,
-    // surface / page
-    surfacePage: '#FFFFFF',
-    surfaceDefault: '#FFFFFF',
-    surfaceDefaultSecondary: sharedColors.slate[100],
-    surfaceSecondary: sharedColors.slate[100],
 
-    // text tokens
-    textDefaultHeading: sharedColors.slate[950],
-    textDefaultBody: sharedColors.slate[900],
-    textDefaultCaption: sharedColors.slate[800],
-    textDefaultPlaceholder: sharedColors.slate[600],
-    textOnColorHeading: '#FFFFFF',
-    textOnColorBody: '#FFFFFF',
-    textOnColorCaption: sharedColors.slate[100],
-    textOnColorPlaceholder: sharedColors.slate[100],
+    // surfaces
+    surfacePage: sharedColors.white[50],
+    surfaceDefault: sharedColors.white[50],
+    surfaceDefaultSecondary: sharedColors.white[300],
+    surfaceSecondary: sharedColors.white[300],
+
+    // Auth Header
+    surfaceAuthPageStart: sharedColors.primary[300],
+    surfaceAuthPageMid: sharedColors.primary[400],
+    surfaceAuthPageEnd: sharedColors.primary[500],
+
+    // text
+    textDefaultHeading: sharedColors.black[900],
+    textDefaultBody: sharedColors.black[500],
+    textDefaultCaption: sharedColors.black[300],
+    textDefaultPlaceholder: sharedColors.white[900],
+
+    textOnColorHeading: sharedColors.white[50],
+    textOnColorBody: sharedColors.white[50],
+    textOnColorCaption: sharedColors.white[200],
+    textOnColorPlaceholder: sharedColors.white[300],
 
     // primary / secondary shortcuts
     primaryDefault: sharedColors.primary[500],
     primaryDefaultHover: sharedColors.primary[400],
-    primaryDefaultSubtle: sharedColors.primary[150],
-    secondaryDefault: sharedColors.information[500],
+    primaryDefaultSubtle: sharedColors.primary[100],
 
-    // icons, borders mapped to primary / slate / error
+    secondaryDefault: sharedColors.secondary[500],
+    secondaryDefaultHover: sharedColors.secondary[400],
+    secondaryDefaultSubtle: sharedColors.secondary[100],
+
+    // icons & borders
     iconPrimaryDefault: sharedColors.primary[500],
     iconPrimaryDefaultHover: sharedColors.primary[400],
-    iconPrimaryOnColor: '#FFFFFF',
+    iconPrimaryOnColor: sharedColors.white[50],
 
-    borderDefault: '#FFFFFF',
-    borderDefaultSecondary: sharedColors.slate[100],
+    borderDefault: sharedColors.white[600],
+    borderDefaultSecondary: sharedColors.white[600],
     borderPrimaryDefault: sharedColors.primary[500],
     borderPrimaryDefaultHover: sharedColors.primary[600],
-    borderPrimaryDefaultSubtle: sharedColors.primary[150],
+    borderPrimaryDefaultSubtle: sharedColors.primary[100],
 
-    borderErrorDefault: sharedColors.error[500],
-    borderErrorDefaultHover: sharedColors.error[600],
+    borderErrorDefault: sharedColors.red[500],
+    borderErrorDefaultHover: sharedColors.red[600],
 
+    // semantic surfaces
     surfacePrimaryDefault: sharedColors.primary[500],
-    surfaceErrorDefault: sharedColors.error[500],
-    surfaceInformationDefault: sharedColors.information[500],
+    surfaceErrorDefault: sharedColors.red[500],
+    surfaceInformationDefault: sharedColors.secondary[500],
     surfaceWarningDefault: sharedColors.warning[500],
-    surfaceSuccessDefault: sharedColors.success[500],
+    surfaceSuccessDefault: sharedColors.green[500],
 
-    // backwards-compat convenience keys
-    typography: sharedColors.slate[950],
-    background: '#FFFFFF',
+    // backwards compat
+    typography: sharedColors.black[900],
+    background: sharedColors.white[50],
   },
   margins: {
     sm: 2,
@@ -191,17 +220,51 @@ export const lightTheme = {
 export const darkTheme = {
   colors: {
     ...sharedColors,
-    typography: '#FFFFFF',
-    background: '#000000',
-    surfacePage: '#0B0B0B',
-    surfaceDefault: '#0B0B0B',
-    textDefaultHeading: '#FFFFFF',
-    textDefaultBody: '#EAEDF1',
-    textDefaultCaption: sharedColors.slate[300],
-    textDefaultPlaceholder: sharedColors.slate[400],
+
+    surfacePage: sharedColors.black[900],
+    surfaceDefault: sharedColors.black[900],
+    surfaceSecondary: sharedColors.black[700],
+
+    // Auth Header
+    surfaceAuthPageStart: sharedColors.primary[300],
+    surfaceAuthPageMid: sharedColors.primary[400],
+    surfaceAuthPageEnd: sharedColors.primary[500],
+
+    textDefaultHeading: sharedColors.white[50],
+    textDefaultBody: sharedColors.white[300],
+    textDefaultCaption: sharedColors.white[600],
+    textDefaultPlaceholder: sharedColors.white[800],
+
+    textOnColorHeading: sharedColors.white[50],
+    textOnColorBody: sharedColors.white[100],
+    textOnColorCaption: sharedColors.white[300],
+    textOnColorPlaceholder: sharedColors.white[600],
+
     primaryDefault: sharedColors.primary[500],
     primaryDefaultHover: sharedColors.primary[400],
-    secondaryDefault: sharedColors.information[500],
+    primaryDefaultSubtle: sharedColors.primary[700], // subtle in dark = deeper tone
+
+    secondaryDefault: sharedColors.secondary[500],
+    secondaryDefaultHover: sharedColors.secondary[400],
+    secondaryDefaultSubtle: sharedColors.secondary[700],
+
+    borderDefault: sharedColors.black[400],
+    borderDefaultSecondary: sharedColors.black[400],
+    borderPrimaryDefault: sharedColors.primary[500],
+    borderPrimaryDefaultHover: sharedColors.primary[600],
+    borderPrimaryDefaultSubtle: sharedColors.primary[700],
+
+    borderErrorDefault: sharedColors.red[500],
+    borderErrorDefaultHover: sharedColors.red[600],
+
+    surfacePrimaryDefault: sharedColors.primary[500],
+    surfaceErrorDefault: sharedColors.red[500],
+    surfaceInformationDefault: sharedColors.secondary[500],
+    surfaceWarningDefault: sharedColors.warning[500],
+    surfaceSuccessDefault: sharedColors.green[500],
+
+    typography: sharedColors.white[50],
+    background: sharedColors.black[900],
   },
   margins: {
     sm: 2,

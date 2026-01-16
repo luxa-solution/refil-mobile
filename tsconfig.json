@@ -4,6 +4,8 @@
     "strict": true,
     "baseUrl": ".",
     "resolveJsonModule": true,
+    "allowImportingTsExtensions": true,
+    "typeRoots": ["./types", "./node_modules/@types"],
     "paths": {
       "@/translation/*": ["src/translation/*"],
       "@/features/*": ["src/features/*"],

@@ -1,10 +1,16 @@
 import { Stack } from 'expo-router';
+import { useEffect } from 'react';
 import { useUnistyles } from 'react-native-unistyles';
 
+import { setupAuthInterceptors } from '@/features/auth/api/setupAuthInterceptors';
 import '@/translation';
 
 export default function RootLayout() {
   const { theme } = useUnistyles();
+
+  useEffect(() => {
+    setupAuthInterceptors();
+  }, []);
 
   return (
     <Stack
@@ -17,9 +23,11 @@ export default function RootLayout() {
           color: theme.colors.typography,
         },
         headerTintColor: theme.colors.typography,
+        headerShown: false,
       }}>
-      <Stack.Screen name="onboarding" options={{ headerShown: false }} />
-      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+      <Stack.Screen name="onboarding" />
+      <Stack.Screen name="auth" />
+      <Stack.Screen name="(tabs)" />
     </Stack>
   );
 }
