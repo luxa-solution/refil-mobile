@@ -9,6 +9,7 @@ import { PhoneField } from '../components/inputs/PhoneField';
 import { TextField } from '../components/inputs/TextField';
 import { Container } from '../components/layout/Container';
 import { ContentTitle } from '../components/layout/ContentTitle';
+import { SignupText } from '../components/texts/signup';
 import { useAuthTokenStore } from '../store/authTokenStore';
 import { isValidPhone } from '../utils/phone';
 
@@ -29,7 +30,14 @@ export function LoginScreen() {
 
     setLoading(true);
 
-    const res = await loginMutation({ phoneNumber: phone, password });
+    // TODO: remove __DEV__ and allow endpoint
+    const res = __DEV__
+      ? {
+          ok: true,
+          error: undefined,
+          data: { token: 'token' },
+        }
+      : await loginMutation({ phoneNumber: phone, password });
 
     setLoading(false);
 
@@ -54,30 +62,25 @@ export function LoginScreen() {
       <View style={styles.wrap}>
         <ContentTitle>Welcome back!</ContentTitle>
 
-        <PhoneField value={phone} onChange={setPhone} />
-        <TextField
-          label="Password"
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry
-          placeholder="••••••"
-          error={err}
-        />
-
-        <Text style={styles.forgot} onPress={() => router.push('/auth/forgot-password' as Href)}>
-          Forgot Password?
-        </Text>
-
-        <PrimaryButton title="Login" onPress={submit} loading={loading} />
-
-        <Text style={styles.footer}>
-          Have no account?{' '}
-          <Text
-            style={styles.footerLink}
-            onPress={() => router.push('/auth/create-account' as Href)}>
-            Sign Up
+        <View style={styles.inputGroup}>
+          <PhoneField value={phone} onChange={setPhone} />
+          <TextField
+            label="Password"
+            value={password}
+            onChangeText={setPassword}
+            secureTextEntry
+            placeholder="••••••"
+            error={err}
+          />
+          <Text style={styles.forgot} onPress={() => router.push('/auth/forgot-password' as Href)}>
+            Forgot Password?
           </Text>
-        </Text>
+        </View>
+
+        <View style={styles.buttonGroup}>
+          <PrimaryButton title="Login" onPress={submit} loading={loading} />
+          <SignupText />
+        </View>
       </View>
     </Container>
   );
@@ -87,20 +90,17 @@ const styles = StyleSheet.create((theme) => ({
   wrap: {
     flex: 1,
     justifyContent: 'center',
-    gap: 12,
+    gap: 40,
+  },
+  inputGroup: {
+    gap: 20,
+  },
+  buttonGroup: {
+    gap: 10,
   },
   forgot: {
     textAlign: 'right',
     color: theme.colors.textDefaultCaption,
     marginTop: -6,
-  },
-  footer: {
-    textAlign: 'center',
-    color: theme.colors.textDefaultCaption,
-    marginTop: 10,
-  },
-  footerLink: {
-    color: theme.colors.primaryDefault,
-    fontWeight: '900',
   },
 }));

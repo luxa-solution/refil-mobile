@@ -38,7 +38,15 @@ export function OtpVerifyScreen() {
     if (!phoneNumber) return setError('Missing phone number. Restart flow.');
 
     setLoading(true);
-    const res = await verifyOtpMutation({ phoneNumber, otp: otp.value });
+    // TODO: remove __DEV__ and allow endpoint
+    const res = __DEV__
+      ? {
+          ok: true,
+          error: undefined,
+          data: { token: 'token' },
+        }
+      : await verifyOtpMutation({ phoneNumber, otp: otp.value });
+
     setLoading(false);
 
     if (!res.ok) return setError(res.error);
