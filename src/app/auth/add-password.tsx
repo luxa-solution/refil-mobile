@@ -1,5 +1,5 @@
-import { AddPasswordScreen } from '@/features/auth/screens/AddPassword';
+import { PasswordScreen } from '@/features/auth/screens/Password';
 
 export default function LoginRoute() {
-  return <AddPasswordScreen />;
+  return <PasswordScreen mode="signup" />;
 }

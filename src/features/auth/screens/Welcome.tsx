@@ -13,7 +13,7 @@ export function WelcomeScreen() {
   const resetFlow = useAuthFlowStore((s) => s.resetFlow);
 
   return (
-    <Container>
+    <Container animateWave={true}>
       <View style={styles.center}>
         <ContentTitle>Welcome!</ContentTitle>
 

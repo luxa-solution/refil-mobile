@@ -2,7 +2,11 @@ import React from 'react';
 import { Pressable, Text } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 
-type Props = { title: string; onPress: () => void; disabled?: boolean };
+type Props = {
+  title: string;
+  onPress: () => void;
+  disabled?: boolean;
+};
 
 export function OutlineButton({ title, onPress, disabled }: Props) {
   return (

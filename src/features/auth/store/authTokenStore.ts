@@ -1,31 +1,33 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
-
-export type AuthTokens = {
-  accessToken: string;
-  refreshToken?: string;
-};
+import { AuthTokens } from '../types/token';
 
 type AuthTokenState = {
-  tokens: AuthTokens | null;
-  setTokens: (tokens: AuthTokens | null) => void;
-  clearTokens: () => void;
+  accessToken: string | null;
+  refreshToken: string | null;
 
-  getAccessToken: () => string | null;
-  getRefreshToken: () => string | null;
+  setTokens: (tokens: AuthTokens) => void;
+  clearTokens: () => void;
+};
+
+const initial = {
+  accessToken: null as string | null,
+  refreshToken: null as string | null,
 };
 
 export const useAuthTokenStore = create<AuthTokenState>()(
   persist(
-    (set, get) => ({
-      tokens: null,
+    (set) => ({
+      ...initial,
 
-      setTokens: (tokens) => set({ tokens }),
-      clearTokens: () => set({ tokens: null }),
+      setTokens: ({ accessToken, refreshToken }) =>
+        set({
+          accessToken,
+          refreshToken: refreshToken ?? null,
+        }),
 
-      getAccessToken: () => get().tokens?.accessToken ?? null,
-      getRefreshToken: () => get().tokens?.refreshToken ?? null,
+      clearTokens: () => set({ ...initial }),
     }),
     {
       name: 'auth-token-storage',

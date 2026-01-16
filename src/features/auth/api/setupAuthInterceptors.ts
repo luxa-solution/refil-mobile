@@ -1,37 +1,36 @@
-import { configureAuthInterceptors } from '@/core/api/interceptors';
+import type { AxiosError } from 'axios';
+import { api } from '@/core/api/client';
 import { useAuthTokenStore } from '../store/authTokenStore';
-import { refreshMutation } from './mutations/refresh';
+
+let didSetup = false;
+
+async function getAccessToken(): Promise<string | null> {
+  // IMPORTANT: no AsyncStorage reads here; just store state (fast + sync)
+  return useAuthTokenStore.getState().accessToken;
+}
 
 export function setupAuthInterceptors() {
-  configureAuthInterceptors({
-    getAccessToken: () => useAuthTokenStore.getState().getAccessToken(),
-    getRefreshToken: () => useAuthTokenStore.getState().getRefreshToken(),
-    setTokens: (accessToken, refreshToken) =>
-      useAuthTokenStore.getState().setTokens({ accessToken, refreshToken }),
-    clearTokens: () => useAuthTokenStore.getState().clearTokens(),
+  if (didSetup) return;
+  didSetup = true;
 
-    refresh: async (refreshToken) => {
-      // TODO: confirm refresh request/response shape
-      const res = await refreshMutation(refreshToken);
-      if (!res.ok)
-        return {
-          ok: false,
-        };
+  api.interceptors.request.use(async (config) => {
+    const token = await getAccessToken();
 
-      // TODO: confirm token keys returned by backend
-      const accessToken =
-        (res.data as any)?.accessToken ??
-        (res.data as any)?.token ??
-        (res.data as any)?.access_token;
+    if (token) {
+      config.headers = config.headers ?? {};
+      config.headers.Authorization = `Bearer ${token}`;
+    }
 
-      const newRefresh =
-        (res.data as any)?.refreshToken ?? (res.data as any)?.refresh_token ?? refreshToken;
-
-      return {
-        ok: !!accessToken,
-        accessToken,
-        refreshToken: newRefresh,
-      };
-    },
+    return config;
   });
+
+  api.interceptors.response.use(
+    (res) => res,
+    async (error: AxiosError) => {
+      // TODO: refresh token flow (when backend response shape confirmed)
+      // if (error.response?.status === 401) { ...refresh... }
+
+      return Promise.reject(error);
+    }
+  );
 }

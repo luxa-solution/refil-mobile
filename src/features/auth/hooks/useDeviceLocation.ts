@@ -1,6 +1,6 @@
 import * as Location from 'expo-location';
 import { useCallback, useEffect, useState } from 'react';
-import type { AddressRequestDto } from '../types/auth.dto';
+import type { AddressRequestDto } from '../types/dto';
 import { toAddressRequestDto } from '../utils/location';
 
 type State = {
