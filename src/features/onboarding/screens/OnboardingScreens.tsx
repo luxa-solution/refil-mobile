@@ -1,24 +1,27 @@
 import { Href, useRouter } from 'expo-router';
 import React, { useRef, useState } from 'react';
-import { FlatList, ListRenderItem, View } from 'react-native';
+import { Animated, Dimensions, FlatList, Image, ListRenderItem, View } from 'react-native';
 
 import { StepDots } from '@/features/auth/components/layout/StepDots';
-import { Button } from '@/shared/components';
-import { OnboardingContent } from '../components';
+import { Wave } from '@/features/auth/components/layout/Wave';
+import { useWaveTopAnimation } from '@/features/auth/hooks/useWaveTopAnimation';
+import { Button, ThemedText } from '@/shared/components';
 import { OnboardingSlide, onboardingSlides } from '../data/onboardingData';
 import { useOnboardingStore } from '../store';
 import { styles } from './OnboardingScreen.styles';
+
+const { height: screenHeight } = Dimensions.get('window');
 
 const viewabilityConfig = {
   itemVisiblePercentThreshold: 60,
 };
 
 /**
- * OnboardingScreens — Multi-slide carousel with dots progress and call-to-action buttons.
+ * OnboardingScreens — Multi-slide carousel with animated wave and footer buttons.
  *
- * Renders a horizontal FlatList of onboarding slides with image, title, and description.
- * Progress indicator and Skip/Next buttons are managed at the bottom.
- * On completion, stores state and navigates to main app.
+ * Renders a horizontal FlatList of onboarding slides with image at top,
+ * animated wave, and title/description below. Progress indicator and action
+ * buttons are at the bottom.
  *
  * @component
  */
@@ -30,6 +33,14 @@ export const OnboardingScreens = () => {
 
   const total = onboardingSlides.length;
   const isLast = localIndex === total - 1;
+
+  const waveHeight = 0.1 * screenHeight;
+  const animatedTop = useWaveTopAnimation({
+    enabled: true,
+    finalTopPercent: 57,
+    fromTopPercent: 67,
+    durationMs: 800,
+  });
 
   // Handle skip: mark complete and navigate to main tabs
   const handleSkip = () => {
@@ -57,12 +68,12 @@ export const OnboardingScreens = () => {
   }).current;
 
   const renderItem: ListRenderItem<OnboardingSlide> = ({ item }) => {
-    return <OnboardingContent slide={item} />;
+    return <OnboardingSlideContent slide={item} />;
   };
 
   return (
     <View style={styles.root}>
-      {/* Carousel list: horizontal, paginated */}
+      {/* Hero image carousel */}
       <FlatList
         ref={flatListRef}
         data={onboardingSlides}
@@ -77,8 +88,18 @@ export const OnboardingScreens = () => {
         style={styles.flatListContainer}
       />
 
-      {/* Footer with progress and action buttons */}
-      <View style={styles.card}>
+      {/* Animated wave overlay */}
+      <Animated.View style={[styles.waveContainer, { top: animatedTop }]}>
+        <Wave height={waveHeight} />
+      </Animated.View>
+
+      {/* Bottom content sheet with text and buttons */}
+      <View style={styles.bottomSheet}>
+        <ThemedText style={styles.title}>{onboardingSlides[localIndex].title}</ThemedText>
+        <ThemedText style={styles.description}>
+          {onboardingSlides[localIndex].description}
+        </ThemedText>
+
         <View style={styles.progressContainer}>
           <StepDots activeIndex={localIndex + 1} count={total} />
         </View>
@@ -100,3 +121,14 @@ export const OnboardingScreens = () => {
     </View>
   );
 };
+
+/**
+ * OnboardingSlideContent — Renders just the hero image for the carousel.
+ */
+function OnboardingSlideContent({ slide }: { slide: OnboardingSlide }) {
+  return (
+    <View style={[styles.slideContainer, { width: Dimensions.get('window').width }]}>
+      <Image source={slide.imgsrc} style={styles.heroImage} resizeMode="cover" />
+    </View>
+  );
+}
