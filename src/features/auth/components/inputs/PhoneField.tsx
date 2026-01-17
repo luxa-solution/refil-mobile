@@ -1,5 +1,5 @@
 import React from 'react';
-import { normalizePhone } from '../../utils/phone';
+import { formatPhoneAsYouType } from '../../utils/phone';
 import { TextField } from './TextField';
 
 type Props = {
@@ -21,7 +21,7 @@ export function PhoneField({
     <TextField
       label={label}
       value={value}
-      onChangeText={(t) => onChange(normalizePhone(t))}
+      onChangeText={(t) => onChange(formatPhoneAsYouType(t))}
       keyboardType="phone-pad"
       placeholder={placeholder}
       error={error}
