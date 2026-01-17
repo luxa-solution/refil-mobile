@@ -1,8 +1,9 @@
 import { Href, useRouter } from 'expo-router';
-import React, { useMemo, useRef, useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { FlatList, ListRenderItem, View } from 'react-native';
 
-import { Button, ProgressBar } from '@/shared/components';
+import { StepDots } from '@/features/auth/components/layout/StepDots';
+import { Button } from '@/shared/components';
 import { OnboardingContent } from '../components';
 import { OnboardingSlide, onboardingSlides } from '../data/onboardingData';
 import { useOnboardingStore } from '../store';
@@ -59,16 +60,6 @@ export const OnboardingScreens = () => {
     return <OnboardingContent slide={item} />;
   };
 
-  // Prepare progress bar props with current progress
-  const progressProps = useMemo(
-    () => ({
-      variant: 'dots' as const,
-      current: localIndex + 1,
-      total,
-    }),
-    [localIndex, total]
-  );
-
   return (
     <View style={styles.root}>
       {/* Carousel list: horizontal, paginated */}
@@ -89,7 +80,7 @@ export const OnboardingScreens = () => {
       {/* Footer with progress and action buttons */}
       <View style={styles.card}>
         <View style={styles.progressContainer}>
-          <ProgressBar {...progressProps} />
+          <StepDots activeIndex={localIndex + 1} count={total} />
         </View>
 
         <View style={styles.ctaRow}>
