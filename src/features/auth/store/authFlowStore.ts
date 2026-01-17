@@ -2,12 +2,12 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 import {
-  AuthFlowMode,
   AuthFlowModeOrNull,
   NextAfterVerifyOrNull,
   ResetDetails,
   SignupDetails,
 } from '../types/flow';
+import { normalizePhoneToE164 } from '../utils/phone';
 
 type AuthFlowState = {
   // shared
@@ -53,30 +53,39 @@ export const useAuthFlowStore = create<AuthFlowState>()(
       ...initial,
 
       setMode: (mode) => set({ mode }),
-      setPhoneNumber: (phoneNumber) => set({ phoneNumber }),
+      setPhoneNumber: (phoneNumber) => {
+        try {
+          const e164 = normalizePhoneToE164(phoneNumber);
+          set({ phoneNumber: e164 || phoneNumber });
+        } catch {
+          set({ phoneNumber });
+        }
+      },
       setSignupName: (firstName, lastName) => set({ firstName, lastName }),
       setOtp: (otp) => set({ otp }),
       setNextAfterVerify: (nextAfterVerify) => set({ nextAfterVerify }),
 
-      setSignupDetails: ({ phoneNumber, firstName, lastName }) =>
+      setSignupDetails: ({ phoneNumber, firstName, lastName }) => {
         set({
           mode: 'signup',
-          phoneNumber,
+          phoneNumber: normalizePhoneToE164(phoneNumber),
           firstName,
           lastName,
           otp: '',
           nextAfterVerify: 'add-location',
-        }),
+        });
+      },
 
-      setResetDetails: ({ phoneNumber }) =>
+      setResetDetails: ({ phoneNumber }) => {
         set({
           mode: 'reset',
-          phoneNumber,
+          phoneNumber: normalizePhoneToE164(phoneNumber),
           firstName: '',
           lastName: '',
           otp: '',
           nextAfterVerify: 'reset-password',
-        }),
+        });
+      },
 
       resetFlow: () => set({ ...initial }),
     }),
