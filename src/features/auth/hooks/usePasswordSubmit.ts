@@ -12,12 +12,6 @@ function validateMode(storeMode: AuthFlowMode | null, mode: AuthFlowMode): strin
   return null;
 }
 
-function validatePasswords(password: string, confirm: string): string | null {
-  if (password.length < 6) return 'Password must be at least 6 characters';
-  if (password !== confirm) return 'Passwords do not match';
-  return null;
-}
-
 export function usePasswordSubmit(mode: AuthFlowMode) {
   const router = useRouter();
 
@@ -28,7 +22,6 @@ export function usePasswordSubmit(mode: AuthFlowMode) {
   const lastName = useAuthFlowStore((s) => s.lastName);
   const otp = useAuthFlowStore((s) => s.otp);
 
-  const setMode = useAuthFlowStore((s) => s.setMode);
   const setNextAfterVerify = useAuthFlowStore((s) => s.setNextAfterVerify);
   const resetFlow = useAuthFlowStore((s) => s.resetFlow);
 
@@ -36,14 +29,11 @@ export function usePasswordSubmit(mode: AuthFlowMode) {
   const [loading, setLoading] = useState(false);
 
   const submit = useCallback(
-    async (password: string, confirm: string) => {
+    async (password: string) => {
       setError(undefined);
 
       const modeErr = validateMode(storeMode, mode);
       if (modeErr) return setError(modeErr);
-
-      const pwErr = validatePasswords(password, confirm);
-      if (pwErr) return setError(pwErr);
 
       setLoading(true);
       try {
@@ -66,13 +56,10 @@ export function usePasswordSubmit(mode: AuthFlowMode) {
 
           if (!res.ok) return setError(res.error);
 
-          setMode('signup');
           setNextAfterVerify('add-location');
           router.replace('/auth/otp-verify' as Href);
           return;
-        }
-
-        if (mode === 'reset') {
+        } else if (mode === 'reset') {
           if (!otp) return setError('Missing OTP. Please restart reset password.');
 
           // TODO: remove __DEV__ and allow endpoint
@@ -98,18 +85,7 @@ export function usePasswordSubmit(mode: AuthFlowMode) {
         setLoading(false);
       }
     },
-    [
-      storeMode,
-      mode,
-      phoneNumber,
-      firstName,
-      lastName,
-      otp,
-      setMode,
-      setNextAfterVerify,
-      resetFlow,
-      router,
-    ]
+    [storeMode, mode, phoneNumber, firstName, lastName, otp, setNextAfterVerify, resetFlow, router]
   );
 
   return { submit, loading, error };

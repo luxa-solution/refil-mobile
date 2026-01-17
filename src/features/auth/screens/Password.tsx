@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Controller, useForm } from 'react-hook-form';
 import { View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 
@@ -10,17 +11,29 @@ import { StepDots } from '../components/layout/StepDots';
 
 import { usePasswordScreenUI } from '../hooks/usePasswordScreenUI';
 import { usePasswordSubmit } from '../hooks/usePasswordSubmit';
+import { PasswordForm, passwordSchema } from '../schema/password.schema';
+import { AuthFlowMode } from '../types/flow';
 
-type Mode = 'signup' | 'reset';
-
-type Props = { mode: Mode };
+type Props = {
+  mode: AuthFlowMode;
+};
 
 export function PasswordScreen({ mode }: Props) {
   const ui = usePasswordScreenUI(mode);
   const { submit, loading, error } = usePasswordSubmit(mode);
 
-  const [password, setPassword] = useState('');
-  const [confirm, setConfirm] = useState('');
+  const {
+    control,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<PasswordForm>({
+    resolver: zodResolver(passwordSchema),
+    defaultValues: { password: '', confirm: '' },
+  });
+
+  const onSubmit = handleSubmit(async (values) => {
+    await submit(values.password);
+  });
 
   return (
     <Container>
@@ -28,28 +41,37 @@ export function PasswordScreen({ mode }: Props) {
         <ContentTitle>{ui.title}</ContentTitle>
 
         <View style={styles.inputGroup}>
-          <TextField
-            label={ui.passwordLabel}
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry
-            placeholder="••••••"
-            error={error}
+          <Controller
+            control={control}
+            name="password"
+            render={({ field: { value, onChange } }) => (
+              <TextField
+                label={ui.passwordLabel}
+                value={value}
+                onChangeText={onChange}
+                secureTextEntry
+                placeholder="••••••"
+                error={errors.password?.message ?? error}
+              />
+            )}
           />
-          <TextField
-            label="Confirm Password"
-            value={confirm}
-            onChangeText={setConfirm}
-            secureTextEntry
-            placeholder="••••••"
+          <Controller
+            control={control}
+            name="confirm"
+            render={({ field: { value, onChange } }) => (
+              <TextField
+                label="Confirm Password"
+                value={value}
+                onChangeText={onChange}
+                secureTextEntry
+                placeholder="••••••"
+                error={errors.confirm?.message}
+              />
+            )}
           />
         </View>
 
-        <PrimaryButton
-          title={ui.primaryCta}
-          onPress={() => submit(password, confirm)}
-          loading={loading}
-        />
+        <PrimaryButton title={ui.primaryCta} onPress={onSubmit} loading={loading || isSubmitting} />
 
         {ui.dots.show && <StepDots activeIndex={ui.dots.activeIndex} count={ui.dots.count} />}
       </View>

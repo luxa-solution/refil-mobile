@@ -1,5 +1,5 @@
 import { Href, useRouter } from 'expo-router';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useState } from 'react';
 
 import { verifyOtpMutation } from '../api/mutations/verify-otp';
 import { useAuthFlowStore } from '../store/authFlowStore';
@@ -11,7 +11,7 @@ type Params = {
   timer: { canResend: boolean; start: () => void };
 };
 
-export function useOtpActions({ otp, timer }: Params) {
+export function useOtpVerifyActions({ otp, timer }: Params) {
   const router = useRouter();
 
   const mode = useAuthFlowStore((s) => s.mode);
@@ -23,12 +23,6 @@ export function useOtpActions({ otp, timer }: Params) {
   const [error, setError] = useState<string | undefined>();
   const [loading, setLoading] = useState(false);
   const [resendLoading, setResendLoading] = useState(false);
-
-  const dots = useMemo(() => {
-    const dotsCount = mode === 'signup' ? 4 : 3;
-    const activeIndex = mode === 'signup' ? 3 : 2;
-    return { dotsCount, activeIndex };
-  }, [mode]);
 
   const verify = useCallback(async () => {
     setError(undefined);
@@ -52,6 +46,7 @@ export function useOtpActions({ otp, timer }: Params) {
       // TODO: if verify-otp returns tokens, store them here
       const tokens = extractAuthTokens(res.data);
       if (tokens) setTokens(tokens);
+
       router.push('/auth/verification-status' as Href);
     } finally {
       setLoading(false);
@@ -72,17 +67,5 @@ export function useOtpActions({ otp, timer }: Params) {
     }
   }, [timer]);
 
-  return {
-    mode,
-    phoneNumber,
-
-    error,
-    loading,
-    resendLoading,
-
-    verify,
-    resend,
-
-    dots,
-  };
+  return { error, loading, resendLoading, verify, resend };
 }

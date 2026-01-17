@@ -1,4 +1,6 @@
+import { zodResolver } from '@hookform/resolvers/zod';
 import { Href, useRouter } from 'expo-router';
+import { Controller, useForm } from 'react-hook-form';
 import { Text, View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 
@@ -9,10 +11,24 @@ import { Container } from '../components/layout/Container';
 import { ContentTitle } from '../components/layout/ContentTitle';
 import { SignupText } from '../components/texts/signup';
 import { useLogin } from '../hooks/useLogin';
+import { LoginForm, loginSchema } from '../schema/login.schema';
 
 export function LoginScreen() {
   const router = useRouter();
-  const { phone, setPhone, password, setPassword, err, loading, submit } = useLogin();
+  const { submit, loading, error } = useLogin();
+
+  const {
+    control,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<LoginForm>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: { phoneNumber: '', password: '' },
+  });
+
+  const onSubmit = handleSubmit(async (values) => {
+    await submit(values);
+  });
 
   return (
     <Container>
@@ -20,14 +36,26 @@ export function LoginScreen() {
         <ContentTitle>Welcome back!</ContentTitle>
 
         <View style={styles.inputGroup}>
-          <PhoneField value={phone} onChange={setPhone} />
-          <TextField
-            label="Password"
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry
-            placeholder="••••••"
-            error={err}
+          <Controller
+            control={control}
+            name="phoneNumber"
+            render={({ field: { value, onChange } }) => (
+              <PhoneField value={value} onChange={onChange} error={errors.phoneNumber?.message} />
+            )}
+          />
+          <Controller
+            control={control}
+            name="password"
+            render={({ field: { value, onChange } }) => (
+              <TextField
+                label="Password"
+                value={value}
+                onChangeText={onChange}
+                secureTextEntry
+                placeholder="••••••"
+                error={errors.password?.message ?? error}
+              />
+            )}
           />
           <Text style={styles.forgot} onPress={() => router.push('/auth/forgot-password' as Href)}>
             Forgot Password?
@@ -35,7 +63,7 @@ export function LoginScreen() {
         </View>
 
         <View style={styles.buttonGroup}>
-          <PrimaryButton title="Login" onPress={submit} loading={loading} />
+          <PrimaryButton title="Login" onPress={onSubmit} loading={loading || isSubmitting} />
           <SignupText />
         </View>
       </View>
