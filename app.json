@@ -6,7 +6,7 @@
     "newArchEnabled": true,
     "scheme": "refil-mobile",
     "platforms": ["ios", "android"],
-    "plugins": ["expo-router", "expo-localization", "expo-font"],
+    "plugins": ["expo-router", "expo-localization", "expo-font", "expo-web-browser"],
     "experiments": {
       "typedRoutes": true,
       "tsconfigPaths": true
