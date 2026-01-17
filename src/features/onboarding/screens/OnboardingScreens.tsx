@@ -105,10 +105,12 @@ export const OnboardingScreens = () => {
         </View>
 
         <View style={styles.ctaRow}>
-          <View style={styles.buttonHalf}>
-            <Button title="Skip" variant="outline" onPress={handleSkip} fullWidth />
-          </View>
-          <View style={styles.buttonHalf}>
+          {!isLast && (
+            <View style={styles.buttonHalf}>
+              <Button title="Skip" variant="outline" onPress={handleSkip} fullWidth />
+            </View>
+          )}
+          <View style={[styles.buttonHalf, isLast && styles.buttonFull]}>
             <Button
               title={isLast ? 'Continue' : 'Next'}
               variant="filled"

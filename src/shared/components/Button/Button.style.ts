@@ -72,7 +72,7 @@ export const styles = StyleSheet.create((theme) => ({
 
   // Variant: outline
   outline: {
-    backgroundColor: 'transparent',
+    backgroundColor: theme.colors.surfaceDefault,
     borderColor: theme.colors.primaryDefault,
     borderWidth: scale(1.5),
   },
