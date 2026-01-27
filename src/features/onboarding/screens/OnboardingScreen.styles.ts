@@ -66,4 +66,7 @@ export const styles = StyleSheet.create((theme) => ({
   buttonHalf: {
     flex: 1,
   },
+  buttonFull: {
+    flex: 1,
+  },
 }));
