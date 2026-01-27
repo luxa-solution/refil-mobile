@@ -9,32 +9,30 @@ export const styles = StyleSheet.create((theme) => ({
     flex: 1,
   },
   slideContainer: {
-    width: '100%',
     height: '100%',
-    position: 'relative',
   },
-  hero: {
-    width: '100%',
-    height: '65%',
+  heroImage: {
+    flex: 1,
+    backgroundColor: '#f5f5f5', // placeholder for image
   },
-  overlayCard: {
+  waveContainer: {
+    position: 'absolute',
+    left: -10,
+    right: 10,
+    zIndex: 10,
+  },
+  bottomSheet: {
     position: 'absolute',
     bottom: 0,
     left: 0,
     right: 0,
     backgroundColor: '#FFFFFF',
-    borderTopLeftRadius: 28,
-    borderTopRightRadius: 28,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
     paddingHorizontal: 24,
     paddingTop: 32,
-    paddingBottom: 16,
-    minHeight: '40%',
-  },
-  card: {
-    backgroundColor: '#FFFFFF',
-    paddingHorizontal: 24,
-    paddingTop: 16,
     paddingBottom: 24,
+    minHeight: '35%',
   },
   title: {
     fontFamily: 'Geist',
@@ -56,15 +54,14 @@ export const styles = StyleSheet.create((theme) => ({
     letterSpacing: 0,
     color: theme.colors.textDefaultBody,
     textAlign: 'left',
+    marginBottom: 20,
   },
   progressContainer: {
-    marginTop: 8,
     marginBottom: 24,
   },
   ctaRow: {
     flexDirection: 'row',
     gap: 12,
-    marginTop: 8,
   },
   buttonHalf: {
     flex: 1,
