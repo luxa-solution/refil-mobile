@@ -8,16 +8,15 @@ import { ContentTitle } from '../components/layout/ContentTitle';
 import { StepDots } from '../components/layout/StepDots';
 
 import { useOtp, useResendTimer } from '../hooks/useOtp';
-import { useOtpActions } from '../hooks/useOtpActions';
+import { useOtpFlowMeta } from '../hooks/useOtpFlowMeta';
+import { useOtpVerifyActions } from '../hooks/useOtpVerifyActions';
 
 export function OtpVerifyScreen() {
   const otp = useOtp(4);
   const timer = useResendTimer(30);
 
-  const { phoneNumber, error, loading, resendLoading, verify, resend, dots } = useOtpActions({
-    otp,
-    timer,
-  });
+  const { phoneNumber, dots } = useOtpFlowMeta();
+  const { error, loading, resendLoading, verify, resend } = useOtpVerifyActions({ otp, timer });
 
   return (
     <Container>

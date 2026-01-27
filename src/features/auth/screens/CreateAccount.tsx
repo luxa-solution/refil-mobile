@@ -1,5 +1,7 @@
+import { zodResolver } from '@hookform/resolvers/zod';
 import { Href, useRouter } from 'expo-router';
-import React, { useState } from 'react';
+import React from 'react';
+import { Controller, useForm } from 'react-hook-form';
 import { View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 import { PrimaryButton } from '../components/buttons/PrimaryButton';
@@ -8,34 +10,32 @@ import { TextField } from '../components/inputs/TextField';
 import { Container } from '../components/layout/Container';
 import { ContentTitle } from '../components/layout/ContentTitle';
 import { StepDots } from '../components/layout/StepDots';
+import { CreateAccountForm, createAccountSchema } from '../schema/createAccount.schema';
 import { useAuthFlowStore } from '../store/authFlowStore';
-import { isValidPhone } from '../utils/phone';
 
 export function CreateAccountScreen() {
   const router = useRouter();
   const setSignupDetails = useAuthFlowStore((s) => s.setSignupDetails);
 
-  const [phone, setPhone] = useState('');
-  const [firstName, setFirst] = useState('');
-  const [lastName, setLast] = useState('');
-  const [err, setErr] = useState<{ phone?: string; first?: string; last?: string }>({});
+  const {
+    control,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<CreateAccountForm>({
+    resolver: zodResolver(createAccountSchema),
+    defaultValues: { phoneNumber: '', firstName: '', lastName: '' },
+    mode: 'onSubmit',
+  });
 
-  const submit = () => {
-    const nextErr: typeof err = {};
-    if (!isValidPhone(phone)) nextErr.phone = 'Enter a valid phone number';
-    if (!firstName.trim()) nextErr.first = 'First name required';
-    if (!lastName.trim()) nextErr.last = 'Last name required';
-    setErr(nextErr);
-    if (Object.keys(nextErr).length) return;
-
+  const onSubmit = handleSubmit((values) => {
     setSignupDetails({
-      phoneNumber: phone,
-      firstName: firstName.trim(),
-      lastName: lastName.trim(),
+      phoneNumber: values.phoneNumber,
+      firstName: values.firstName.trim(),
+      lastName: values.lastName.trim(),
     });
 
     router.push('/auth/add-password' as Href);
-  };
+  });
 
   return (
     <Container>
@@ -43,24 +43,42 @@ export function CreateAccountScreen() {
         <ContentTitle>Create Account</ContentTitle>
 
         <View style={styles.buttonGroup}>
-          <PhoneField value={phone} onChange={setPhone} error={err.phone} />
-          <TextField
-            label="First Name"
-            value={firstName}
-            onChangeText={setFirst}
-            error={err.first}
-            placeholder="Ahmad"
+          <Controller
+            control={control}
+            name="phoneNumber"
+            render={({ field: { value, onChange } }) => (
+              <PhoneField value={value} onChange={onChange} error={errors.phoneNumber?.message} />
+            )}
           />
-          <TextField
-            label="Last Name"
-            value={lastName}
-            onChangeText={setLast}
-            error={err.last}
-            placeholder="Abubakr"
+          <Controller
+            control={control}
+            name="firstName"
+            render={({ field: { value, onChange } }) => (
+              <TextField
+                label="First Name"
+                value={value}
+                onChangeText={onChange}
+                error={errors.firstName?.message}
+                placeholder="Ahmad"
+              />
+            )}
+          />
+          <Controller
+            control={control}
+            name="lastName"
+            render={({ field: { value, onChange } }) => (
+              <TextField
+                label="Last Name"
+                value={value}
+                onChangeText={onChange}
+                error={errors.lastName?.message}
+                placeholder="Abubakr"
+              />
+            )}
           />
         </View>
 
-        <PrimaryButton title="Next" onPress={submit} />
+        <PrimaryButton title="Next" onPress={onSubmit} loading={isSubmitting} />
 
         <StepDots activeIndex={1} count={4} />
       </View>

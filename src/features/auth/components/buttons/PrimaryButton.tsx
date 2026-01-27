@@ -1,6 +1,7 @@
 import React from 'react';
-import { Pressable, Text, ActivityIndicator } from 'react-native';
+import { ActivityIndicator, Pressable, Text } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
+import { buttonBaseStyles } from './baseStyles';
 
 type Props = {
   title: string;
@@ -17,28 +18,25 @@ export function PrimaryButton({ title, onPress, disabled, loading }: Props) {
       onPress={onPress}
       disabled={isDisabled}
       style={({ pressed }) => [
+        buttonBaseStyles.btnBase,
         styles.btn,
-        isDisabled && styles.disabled,
-        pressed && !isDisabled && styles.pressed,
+        isDisabled && buttonBaseStyles.disabled,
+        pressed && !isDisabled && buttonBaseStyles.pressed,
       ]}>
-      {loading ? <ActivityIndicator /> : <Text style={styles.text}>{title}</Text>}
+      {loading ? (
+        <ActivityIndicator />
+      ) : (
+        <Text style={[buttonBaseStyles.textBase, styles.text]}>{title}</Text>
+      )}
     </Pressable>
   );
 }
 
 const styles = StyleSheet.create((theme) => ({
   btn: {
-    height: 48,
-    borderRadius: 24,
     backgroundColor: theme.colors.primaryDefault,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   text: {
     color: theme.colors.textOnColorHeading,
-    fontWeight: '400',
-    fontSize: 21,
   },
-  disabled: { opacity: 0.6 },
-  pressed: { opacity: 0.92 },
 }));
