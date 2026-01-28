@@ -34,13 +34,19 @@ export const OnboardingScreens = () => {
   const total = onboardingSlides.length;
   const isLast = localIndex === total - 1;
 
-  const waveHeight = 0.1 * screenHeight;
+  const bottomSheetHeightPercent = 35; // minHeight from styles
+  const waveHeightPercent = 10;
+
+  // Position wave higher up to integrate with upper part of bottom sheet
+  // Wave top = (bottom sheet top) - (wave height) + adjustment = 65 - 10 + 1 = 56%
+  const finalTopPercent = 100 - bottomSheetHeightPercent - waveHeightPercent + 1;
+  const fromTopPercent = finalTopPercent + 12; // Start 12% lower for animation
+
+  const waveHeight = (waveHeightPercent / 100) * screenHeight;
   const animatedTop = useWaveTopAnimation({
     enabled: true,
-    // place wave so its bottom meets the top of the bottom sheet
-    // bottomSheet minHeight = 35% and wave height = 10% -> desired top = 100 - 35 - 10 = 55
-    finalTopPercent: 55,
-    fromTopPercent: 67,
+    finalTopPercent, // Will be 56 (100 - 35 - 10 + 1)
+    fromTopPercent, // Will be 68 (56 + 12)
     durationMs: 800,
   });
 
