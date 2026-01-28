@@ -52,14 +52,6 @@ export default function TabLayout() {
           tabBarIcon: ({ color }) => <TabBarIcon name="search" color={color} />,
         }}
       />
-
-      <Tabs.Screen
-        name="order"
-        options={{
-          title: 'Order',
-          tabBarIcon: ({ color }) => <TabBarIcon name="list" color={color} />,
-        }}
-      />
     </Tabs>
   );
 }
