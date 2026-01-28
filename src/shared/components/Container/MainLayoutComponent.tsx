@@ -8,7 +8,7 @@ import { FC, PropsWithChildren, ReactNode, useMemo } from 'react';
 import {
   ColorValue,
   Keyboard,
-  // RefreshControl,
+  ScrollView,
   StatusBar,
   StyleProp,
   TouchableWithoutFeedback,
@@ -81,35 +81,14 @@ const MainLayoutComponent: FC<MainLayoutProps> = ({
               backgroundColor: 'transparent',
             },
           ]}>
-          <InnerItem {...props} lightBar showBg={showBg} />
-          {/* <KeyboardGestureArea
-            interpolator="ios"
-            enableSwipeToDismiss
-            style={[globalStyle.flexOne]}>
-            {scrollEnabled ? (
-              <KeyboardAwareScrollView
-                showsVerticalScrollIndicator={showIndicator}
-                refreshControl={
-                  props?.onRefresh ? (
-                    <RefreshControl
-                      refreshing={!!props?.isRefreshing}
-                      progressBackgroundColor={colors.primaryDefault}
-                      onRefresh={props?.onRefresh}
-                      tintColor={colors.primaryDefault}
-                    />
-                  ) : undefined
-                }
-                scrollEnabled={scrollEnabled}
-                bounces={bounces}
-                style={[globalStyle.flexOne, globalStyle.w10]}>
-                <InnerItem {...props} lightBar showBg={showBg} />
-              </KeyboardAwareScrollView>
-            ) : (
-              <Box flex={1} style={{}}>
-                <InnerItem {...props} lightBar showBg={showBg} />
-              </Box>
-            )}
-          </KeyboardGestureArea> */}
+          <InnerItem
+            {...props}
+            lightBar
+            showBg={showBg}
+            scrollEnabled={scrollEnabled}
+            bounces={bounces}
+            showIndicator={showIndicator}
+          />
         </Box>
       </SafeAreaInsetView>
     </>
@@ -132,28 +111,51 @@ const InnerItem: FC<
     | 'showBg'
     | 'variant'
     | 'backgroundColor'
+    | 'scrollEnabled'
+    | 'onRefresh'
+    | 'isRefreshing'
+    | 'showIndicator'
+    | 'bounces'
   >
-> = ({ children, backgroundColor, avoidKeyboard, lightBar, showBg, hideTouchable, variant }) => {
+> = ({
+  children,
+  backgroundColor,
+  avoidKeyboard,
+  lightBar,
+  showBg,
+  hideTouchable,
+  variant,
+  scrollEnabled = true,
+  bounces = true,
+  showIndicator,
+}) => {
+  const content = avoidKeyboard ? <>{children}</> : children;
+
+  const scrollContent = scrollEnabled ? (
+    <ScrollView
+      scrollEnabled={scrollEnabled}
+      bounces={bounces}
+      showsVerticalScrollIndicator={showIndicator}
+      style={[globalStyle.flexOne, globalStyle.w10]}>
+      {content}
+    </ScrollView>
+  ) : (
+    <Box style={[globalStyle.flexOne, globalStyle.w10]}>{content}</Box>
+  );
+
   return (
     <Box style={[globalStyle.w10, globalStyle.flexOne]}>
       <StatusBar
         barStyle={showBg && lightBar ? 'light-content' : 'dark-content'}
         backgroundColor={backgroundColor}
       />
-      <Box style={[globalStyle.flexOne, globalStyle.w10]}>
-        {hideTouchable ? (
-          <>{children}</>
-        ) : (
-          <TouchableWithoutFeedback
-            accessible={false}
-            onPress={Keyboard.dismiss}
-            style={[globalStyle.flexOne, globalStyle.w10]}>
-            <Box style={[globalStyle.flexOne, globalStyle.w10]}>
-              {avoidKeyboard ? <>{children}</> : children}
-            </Box>
-          </TouchableWithoutFeedback>
-        )}
-      </Box>
+      {hideTouchable ? (
+        scrollContent
+      ) : (
+        <TouchableWithoutFeedback accessible={false} onPress={Keyboard.dismiss}>
+          {scrollContent}
+        </TouchableWithoutFeedback>
+      )}
     </Box>
   );
 };

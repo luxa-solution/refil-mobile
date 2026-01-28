@@ -1,4 +1,4 @@
-import { StyleSheet } from 'react-native-unistyles';
+import { useRouter } from 'expo-router';
 
 import {
   HomeHeader,
@@ -10,6 +10,8 @@ import {
 import { MainLayoutComponent } from '@/shared/components';
 
 export function HomeScreen() {
+  const router = useRouter();
+
   const handleLocationPress = () => {
     // TODO: Handle location selection
   };
@@ -43,14 +45,16 @@ export function HomeScreen() {
   };
 
   const handleStorePress = (store: any) => {
-    // TODO: Navigate to store details
+    router.push({
+      pathname: '/make-order' as any,
+      params: {
+        stationId: store.id,
+      },
+    });
   };
 
   return (
-    <MainLayoutComponent
-      backgroundColor="background"
-      showIndicator={false}
-      edges={['top', 'bottom']}>
+    <MainLayoutComponent backgroundColor="background" showIndicator={false} edges={['top']}>
       {/* Header with location and profile */}
       <HomeHeader
         location="22, Off Tipper garage..."
@@ -79,10 +83,3 @@ export function HomeScreen() {
     </MainLayoutComponent>
   );
 }
-
-const styles = StyleSheet.create((theme) => ({
-  scrollView: {
-    flex: 1,
-    backgroundColor: theme.colors.background,
-  },
-}));
