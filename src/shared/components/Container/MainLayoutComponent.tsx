@@ -21,7 +21,6 @@ import {
 // } from 'react-native-keyboard-controller';
 import { Edge, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StyleSheet } from 'react-native-unistyles';
-import { lightTheme } from '@/core/styles/theme';
 import globalStyle from '@/shared/utils/globalStyle';
 import Box, { ColorToken } from './Box';
 
@@ -82,6 +81,7 @@ const MainLayoutComponent: FC<MainLayoutProps> = ({
               backgroundColor: 'transparent',
             },
           ]}>
+          <InnerItem {...props} lightBar showBg={showBg} />
           {/* <KeyboardGestureArea
             interpolator="ios"
             enableSwipeToDismiss
@@ -148,13 +148,9 @@ const InnerItem: FC<
             accessible={false}
             onPress={Keyboard.dismiss}
             style={[globalStyle.flexOne, globalStyle.w10]}>
-            {/* {avoidKeyboard ? (
-              <KeyboardAvoidingView behavior="height" style={[globalStyle.flexOne]}>
-                {children}
-              </KeyboardAvoidingView>
-            ) : (
-              children
-            )} */}
+            <Box style={[globalStyle.flexOne, globalStyle.w10]}>
+              {avoidKeyboard ? <>{children}</> : children}
+            </Box>
           </TouchableWithoutFeedback>
         )}
       </Box>

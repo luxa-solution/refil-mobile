@@ -37,7 +37,9 @@ export const OnboardingScreens = () => {
   const waveHeight = 0.1 * screenHeight;
   const animatedTop = useWaveTopAnimation({
     enabled: true,
-    finalTopPercent: 57,
+    // place wave so its bottom meets the top of the bottom sheet
+    // bottomSheet minHeight = 35% and wave height = 10% -> desired top = 100 - 35 - 10 = 55
+    finalTopPercent: 55,
     fromTopPercent: 67,
     durationMs: 800,
   });

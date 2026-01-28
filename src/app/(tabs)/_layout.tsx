@@ -1,7 +1,7 @@
-import { Link, Tabs } from 'expo-router';
+import { Tabs } from 'expo-router';
 import { useUnistyles } from 'react-native-unistyles';
 
-import { HeaderButton, TabBarIcon } from '@/shared/components';
+import { TabBarIcon } from '@/shared/components';
 
 export default function TabLayout() {
   const { theme } = useUnistyles();
@@ -23,20 +23,33 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Tab One',
-          tabBarIcon: ({ color }) => <TabBarIcon name="code" color={color} />,
-          headerRight: () => (
-            <Link href={'/(tabs)' as any} asChild>
-              <HeaderButton />
-            </Link>
-          ),
+          title: 'Home',
+          tabBarIcon: ({ color }) => <TabBarIcon name="home" color={color} />,
+          headerShown: false,
         }}
       />
+
       <Tabs.Screen
-        name="two"
+        name="favorite"
         options={{
-          title: 'Tab Two',
-          tabBarIcon: ({ color }) => <TabBarIcon name="code" color={color} />,
+          title: 'Favourite',
+          tabBarIcon: ({ color }) => <TabBarIcon name="heart" color={color} />,
+        }}
+      />
+
+      <Tabs.Screen
+        name="search"
+        options={{
+          title: 'Search',
+          tabBarIcon: ({ color }) => <TabBarIcon name="search" color={color} />,
+        }}
+      />
+
+      <Tabs.Screen
+        name="order"
+        options={{
+          title: 'Order',
+          tabBarIcon: ({ color }) => <TabBarIcon name="list" color={color} />,
         }}
       />
     </Tabs>

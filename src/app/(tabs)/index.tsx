@@ -1,5 +1,5 @@
-import { ScreenOne } from '@/features/home/screens';
+import { HomeScreen } from '@/features/home/screens/Home';
 
 export default function Home() {
-  return <ScreenOne />;
+  return <HomeScreen />;
 }
