@@ -65,6 +65,8 @@ const styles = StyleSheet.create((theme) => ({
     borderRadius: 12,
     marginBottom: 12,
     alignItems: 'flex-start',
+
+    borderWidth: 1,
     gap: 12,
   },
   image: {

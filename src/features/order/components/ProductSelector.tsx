@@ -1,32 +1,57 @@
-import React, { useState } from 'react';
-import { Pressable, ScrollView, TextInput, View } from 'react-native';
-import { StyleSheet } from 'react-native-unistyles';
+import { Ionicons } from '@expo/vector-icons';
+import React, { useRef, useState } from 'react';
+import { Animated, Pressable, ScrollView, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, useUnistyles } from 'react-native-unistyles';
 
+import { fontSize, ms, spacing } from '@/core/styles/responsive_scale';
 import { ThemedText } from '@/shared/components';
 
 const PRESET_SIZES = ['3kg', '5kg', '7kg', '10kg', '15kg', '20kg', '40kg', '50kg'];
 
 interface ProductSelectorProps {
   selectedSize?: string;
-  customSize?: string;
+  customSize?: number;
   onSizeSelect?: (size: string) => void;
-  onCustomSizeChange?: (size: string) => void;
+  onCustomSizeChange?: (size: number) => void;
   productImage?: string;
 }
 
 export function ProductSelector({
   selectedSize,
-  customSize,
+  customSize = 0,
   onSizeSelect,
   onCustomSizeChange,
 }: ProductSelectorProps) {
+  const { theme } = useUnistyles();
   const [localSelectedSize, setLocalSelectedSize] = useState(selectedSize);
-  const [localCustomSize, setLocalCustomSize] = useState(customSize || '');
+  const [localCustomSize, setLocalCustomSize] = useState(customSize);
 
-  const handleCustomSizeChange = (text: string) => {
-    setLocalCustomSize(text);
+  // Animation for custom size
+  const sizeScale = useRef(new Animated.Value(1)).current;
+
+  const animateSize = () => {
+    sizeScale.setValue(1);
+    Animated.sequence([
+      Animated.timing(sizeScale, {
+        toValue: 1.2,
+        duration: 200,
+        useNativeDriver: true,
+      }),
+      Animated.timing(sizeScale, {
+        toValue: 1,
+        duration: 150,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  };
+
+  const handleCustomSizeChange = (delta: number) => {
+    const newSize = Math.max(0, localCustomSize + delta);
+    const rounded = Math.round(newSize * 2) / 2; // Round to nearest 0.5
+    setLocalCustomSize(rounded);
     setLocalSelectedSize('');
-    onCustomSizeChange?.(text);
+    onCustomSizeChange?.(rounded);
+    animateSize();
   };
 
   return (
@@ -46,7 +71,7 @@ export function ProductSelector({
             <Pressable
               onPress={() => {
                 setLocalSelectedSize(size);
-                setLocalCustomSize('');
+                setLocalCustomSize(0);
                 onSizeSelect?.(size);
               }}
               style={[styles.sizeButton, localSelectedSize === size && styles.sizeButtonSelected]}>
@@ -62,15 +87,41 @@ export function ProductSelector({
         ))}
       </ScrollView>
 
-      {/* Custom Size Input */}
-      <View style={styles.customInputWrapper}>
-        <TextInput
-          style={styles.customInput}
-          placeholder="e.g 5kg"
-          placeholderTextColor="#afafaf"
-          value={localCustomSize}
-          onChangeText={handleCustomSizeChange}
-        />
+      {/* Custom Size Selector with +/- Buttons */}
+      <View style={styles.customSizeContainer}>
+        <ThemedText style={styles.customSizeLabel}>Custom Size (kg)</ThemedText>
+        <View style={styles.customSizeControls}>
+          <TouchableOpacity
+            style={styles.minusButton}
+            onPress={() => handleCustomSizeChange(-0.5)}
+            activeOpacity={0.7}
+            accessibilityRole="button"
+            accessibilityLabel="Decrease size"
+            accessibilityHint="Decreases size by 0.5kg">
+            <Ionicons name="remove" size={20} color={theme.colors.primaryDefault} />
+          </TouchableOpacity>
+
+          <Animated.View
+            style={[
+              styles.sizeDisplay,
+              {
+                transform: [{ scale: sizeScale }],
+              },
+            ]}>
+            <ThemedText style={styles.sizeValue}>{localCustomSize}</ThemedText>
+            <ThemedText style={styles.sizeUnit}>kg</ThemedText>
+          </Animated.View>
+
+          <TouchableOpacity
+            style={styles.plusButton}
+            onPress={() => handleCustomSizeChange(0.5)}
+            activeOpacity={0.7}
+            accessibilityRole="button"
+            accessibilityLabel="Increase size"
+            accessibilityHint="Increases size by 0.5kg">
+            <Ionicons name="add" size={20} color={theme.colors.neutral[100]} />
+          </TouchableOpacity>
+        </View>
       </View>
     </View>
   );
@@ -78,42 +129,42 @@ export function ProductSelector({
 
 const styles = StyleSheet.create((theme) => ({
   container: {
-    padding: 16,
+    padding: spacing(16),
     backgroundColor: theme.colors.surfaceDefault,
-    borderRadius: 12,
-    marginBottom: 16,
+    borderRadius: ms(12),
+    marginBottom: spacing(16),
   },
   title: {
-    fontSize: 14,
+    fontSize: fontSize(14),
     fontWeight: '600',
-    marginBottom: 12,
+    marginBottom: spacing(12),
     color: theme.colors.textDefaultBody,
   },
   sizeGrid: {
     flexDirection: 'row',
-    gap: 8,
-    paddingBottom: 12,
+    gap: spacing(8),
+    paddingBottom: spacing(12),
   },
   sizeButtonWrapper: {
     justifyContent: 'center',
   },
   sizeButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 24,
+    paddingHorizontal: spacing(16),
+    paddingVertical: spacing(10),
+    borderRadius: ms(24),
     backgroundColor: theme.colors.white[100],
     borderWidth: 1,
     borderColor: theme.colors.white[600],
-    minWidth: 60,
+    minWidth: ms(60),
     justifyContent: 'center',
     alignItems: 'center',
   },
   sizeButtonSelected: {
-    backgroundColor: theme.colors.primary[500],
-    borderColor: theme.colors.primary[500],
+    backgroundColor: theme.colors.primaryDefault,
+    borderColor: theme.colors.primaryDefault,
   },
   sizeButtonText: {
-    fontSize: 13,
+    fontSize: fontSize(13),
     fontWeight: '500',
     color: theme.colors.textDefaultCaption,
   },
@@ -121,17 +172,58 @@ const styles = StyleSheet.create((theme) => ({
     color: '#ffffff',
     fontWeight: '600',
   },
-  customInputWrapper: {
-    marginTop: 12,
-  },
-  customInput: {
-    height: 44,
-    paddingHorizontal: 16,
-    borderRadius: 12,
-    backgroundColor: theme.colors.white[100],
+  customSizeContainer: {
+    marginTop: spacing(12),
+    padding: spacing(14),
+    backgroundColor: theme.colors.primaryDefaultSubtle,
+    borderRadius: ms(12),
     borderWidth: 1,
-    borderColor: theme.colors.white[600],
-    fontSize: 14,
-    color: theme.colors.textDefaultBody,
+    borderColor: theme.colors.primaryDefault,
+  },
+  customSizeLabel: {
+    fontSize: fontSize(12),
+    fontWeight: '600',
+    color: theme.colors.primaryDefault,
+    marginBottom: spacing(10),
+    letterSpacing: 0.3,
+  },
+  customSizeControls: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: spacing(16),
+  },
+  minusButton: {
+    width: ms(40),
+    height: ms(40),
+    borderRadius: ms(20),
+    backgroundColor: theme.colors.white[100],
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: theme.colors.primaryDefault,
+  },
+  sizeDisplay: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: spacing(2),
+  },
+  sizeValue: {
+    fontSize: fontSize(24),
+    fontWeight: '800',
+    color: theme.colors.primaryDefault,
+  },
+  sizeUnit: {
+    fontSize: fontSize(12),
+    fontWeight: '500',
+    color: theme.colors.textDefaultCaption,
+  },
+  plusButton: {
+    width: ms(40),
+    height: ms(40),
+    borderRadius: ms(20),
+    backgroundColor: theme.colors.primaryDefault,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 }));

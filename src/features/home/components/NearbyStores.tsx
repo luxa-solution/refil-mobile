@@ -3,6 +3,8 @@ import React from 'react';
 import { Pressable, View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 
+import { fontSize, ms, spacing } from '@/core/styles/responsive_scale';
+import { getNearbyStations } from '@/features/home/data/mockStations';
 import { ThemedText } from '@/shared/components';
 
 interface NearbyStore {
@@ -21,32 +23,17 @@ interface NearbyStoresProps {
 }
 
 export function NearbyStores({ onSeeAll, onStorePress }: NearbyStoresProps) {
-  const stores: NearbyStore[] = [
-    {
-      id: '1',
-      name: 'Heagle Gas',
-      rating: 4.2,
-      reviewCount: 187,
-      address: 'Illorin Mall, Taiwo Rd, Offa Garage',
-      distance: '1.0 km',
-    },
-    {
-      id: '2',
-      name: 'NNPC Gas',
-      rating: 4.5,
-      reviewCount: 245,
-      address: 'Iwo Road, GRA, Ibadan',
-      distance: '1.3 km',
-    },
-    {
-      id: '3',
-      name: 'Orange Gas',
-      rating: 4.1,
-      reviewCount: 156,
-      address: 'Apata, Ibadan',
-      distance: '1.5 km',
-    },
-  ];
+  // Get nearby stations from mock data
+  const nearbyStations = getNearbyStations(3);
+
+  const stores: NearbyStore[] = nearbyStations.map((station, index) => ({
+    id: station.id,
+    name: station.name,
+    rating: station.rating,
+    reviewCount: station.reviewCount,
+    address: station.address,
+    distance: `${(0.5 + index * 0.3).toFixed(1)} km`,
+  }));
 
   return (
     <View style={styles.container}>
@@ -120,42 +107,42 @@ export function NearbyStores({ onSeeAll, onStorePress }: NearbyStoresProps) {
 
 const styles = StyleSheet.create((theme) => ({
   container: {
-    paddingVertical: 16,
+    paddingVertical: spacing(16),
     backgroundColor: theme.colors.surfaceDefault,
-    paddingBottom: 32,
+    paddingBottom: spacing(32),
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    marginBottom: 16,
+    paddingHorizontal: spacing(16),
+    marginBottom: spacing(16),
   },
   title: {
-    fontSize: 18,
+    fontSize: fontSize(18),
     fontWeight: '600',
     color: theme.colors.textDefaultHeading,
   },
   seeAll: {
-    fontSize: 14,
+    fontSize: fontSize(14),
     fontWeight: '600',
     color: theme.colors.secondaryDefault,
   },
   storesList: {
-    gap: 12,
-    paddingHorizontal: 16,
+    gap: spacing(12),
+    paddingHorizontal: spacing(16),
   },
   storeCard: {
     flexDirection: 'row',
     backgroundColor: theme.colors.surfaceSecondary,
-    borderRadius: 12,
+    borderRadius: ms(12),
     overflow: 'hidden',
     borderWidth: 1,
     borderColor: theme.colors.white[600],
   },
   imageContainer: {
-    width: 120,
-    height: 120,
+    width: ms(120),
+    height: ms(120),
   },
   placeholderImage: {
     flex: 1,
@@ -165,62 +152,62 @@ const styles = StyleSheet.create((theme) => ({
   },
   storeInfo: {
     flex: 1,
-    padding: 12,
+    padding: spacing(12),
     justifyContent: 'space-between',
   },
   nameRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    gap: 8,
+    gap: spacing(8),
   },
   nameContainer: {
     flex: 1,
   },
   storeName: {
-    fontSize: 14,
+    fontSize: fontSize(14),
     fontWeight: '600',
     color: theme.colors.textDefaultHeading,
   },
   distanceBadge: {
     backgroundColor: theme.colors.white[200],
-    borderRadius: 12,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
+    borderRadius: ms(12),
+    paddingHorizontal: spacing(8),
+    paddingVertical: spacing(4),
   },
   distanceText: {
-    fontSize: 12,
+    fontSize: fontSize(12),
     fontWeight: '600',
     color: theme.colors.secondary[500],
   },
   ratingContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
+    gap: spacing(4),
   },
   starIcon: {
-    marginRight: 2,
+    marginRight: spacing(2),
   },
   rating: {
-    fontSize: 12,
+    fontSize: fontSize(12),
     fontWeight: '600',
     color: theme.colors.textDefaultBody,
   },
   reviewCount: {
-    fontSize: 12,
+    fontSize: fontSize(12),
     color: theme.colors.textDefaultCaption,
   },
   addressContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
+    gap: spacing(4),
   },
   addressIcon: {
-    marginRight: 2,
+    marginRight: spacing(2),
   },
   address: {
     flex: 1,
-    fontSize: 11,
+    fontSize: fontSize(11),
     color: theme.colors.textDefaultCaption,
   },
 }));

@@ -3,6 +3,8 @@ import React from 'react';
 import { Pressable, View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 
+import { fontSize, ms, spacing } from '@/core/styles/responsive_scale';
+import { getTopDistributors } from '@/features/home/data/mockStations';
 import { ThemedText } from '@/shared/components';
 
 interface Distributor {
@@ -17,13 +19,14 @@ interface TopDistributorsProps {
 }
 
 export function TopDistributors({ onSeeAll, onDistributorPress }: TopDistributorsProps) {
-  const distributors: Distributor[] = [
-    { id: '1', name: 'Bovas', icon: 'warehouse' },
-    { id: '2', name: 'Heagle', icon: 'gas-cylinder' },
-    { id: '3', name: 'Orange', icon: 'gas-cylinder' },
-    { id: '4', name: 'NNPC', icon: 'fuel' },
-    { id: '5', name: 'Ace', icon: 'warehouse' },
-  ];
+  // Get top rated stations from mock data
+  const topStations = getTopDistributors(5);
+
+  const distributors: Distributor[] = topStations.map((station) => ({
+    id: station.id,
+    name: station.name,
+    icon: 'gas-cylinder',
+  }));
 
   return (
     <View style={styles.container}>
@@ -37,7 +40,7 @@ export function TopDistributors({ onSeeAll, onDistributorPress }: TopDistributor
       </View>
 
       <View style={styles.distributersRow}>
-        {distributors.map((distributor) => (
+        {distributors.map((distributor, index) => (
           <Pressable
             key={distributor.id}
             style={styles.distributorItem}
@@ -47,7 +50,7 @@ export function TopDistributors({ onSeeAll, onDistributorPress }: TopDistributor
                 style={[
                   styles.avatar,
                   {
-                    backgroundColor: parseInt(distributor.id) % 2 === 0 ? '#e2750a' : '#0d2881',
+                    backgroundColor: index % 2 === 0 ? '#e2750a' : '#0d2881',
                   },
                 ]}>
                 <MaterialCommunityIcons
@@ -69,42 +72,42 @@ export function TopDistributors({ onSeeAll, onDistributorPress }: TopDistributor
 
 const styles = StyleSheet.create((theme) => ({
   container: {
-    paddingVertical: 16,
+    paddingVertical: spacing(16),
     backgroundColor: theme.colors.surfaceDefault,
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    marginBottom: 16,
+    paddingHorizontal: spacing(16),
+    marginBottom: spacing(16),
   },
   title: {
-    fontSize: 18,
+    fontSize: fontSize(18),
     fontWeight: '600',
     color: theme.colors.textDefaultHeading,
   },
   seeAll: {
-    fontSize: 14,
+    fontSize: fontSize(14),
     fontWeight: '600',
     color: theme.colors.secondaryDefault,
   },
   distributersRow: {
     flexDirection: 'row',
-    paddingHorizontal: 12,
-    gap: 12,
+    paddingHorizontal: spacing(12),
+    gap: spacing(12),
   },
   distributorItem: {
     alignItems: 'center',
-    width: 64,
+    width: ms(64),
   },
   avatarContainer: {
-    marginBottom: 8,
+    marginBottom: spacing(8),
   },
   avatar: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
+    width: ms(56),
+    height: ms(56),
+    borderRadius: ms(28),
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#000',
@@ -114,7 +117,7 @@ const styles = StyleSheet.create((theme) => ({
     elevation: 3,
   },
   distributorName: {
-    fontSize: 12,
+    fontSize: fontSize(12),
     fontWeight: '500',
     textAlign: 'center',
     color: theme.colors.textDefaultBody,
