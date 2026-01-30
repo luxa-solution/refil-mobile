@@ -33,15 +33,8 @@ export default function TabLayout() {
         name="order"
         options={{
           title: 'Order',
+          headerShown: false,
           tabBarIcon: ({ color }) => <TabBarIcon name="list" color={color} />,
-        }}
-      />
-
-      <Tabs.Screen
-        name="favorite"
-        options={{
-          title: 'Favourite',
-          tabBarIcon: ({ color }) => <TabBarIcon name="heart" color={color} />,
         }}
       />
 
@@ -50,6 +43,15 @@ export default function TabLayout() {
         options={{
           title: 'Search',
           tabBarIcon: ({ color }) => <TabBarIcon name="search" color={color} />,
+        }}
+      />
+
+      <Tabs.Screen
+        name="profile"
+        options={{
+          headerShown: false,
+          title: 'Profile',
+          tabBarIcon: ({ color }) => <TabBarIcon name="person" color={color} />,
         }}
       />
     </Tabs>
