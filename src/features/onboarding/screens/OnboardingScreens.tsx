@@ -25,6 +25,7 @@ const viewabilityConfig = {
  *
  * @component
  */
+
 export const OnboardingScreens = () => {
   const router = useRouter();
   const flatListRef = useRef<FlatList<OnboardingSlide>>(null);
@@ -39,7 +40,7 @@ export const OnboardingScreens = () => {
     enabled: true,
     // place wave so its bottom meets the top of the bottom sheet
     // bottomSheet minHeight = 35% and wave height = 10% -> desired top = 100 - 35 - 10 = 55
-    finalTopPercent: 55,
+    finalTopPercent: 63,
     fromTopPercent: 67,
     durationMs: 800,
   });
