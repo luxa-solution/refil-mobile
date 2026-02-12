@@ -18,9 +18,9 @@ export function Container({ children, isVerification, animateWave = false }: Pro
 
   const animatedTop = useWaveTopAnimation({
     enabled: animateWave,
-    finalTopPercent: 25,
-    fromTopPercent: 35,
-    durationMs: 800,
+    finalTopPercent: 30,
+    fromTopPercent: 32,
+    durationMs: 500,
   });
 
   return (
